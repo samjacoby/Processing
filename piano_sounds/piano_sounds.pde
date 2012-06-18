@@ -42,8 +42,12 @@ void setup() {
 
 void draw() {
   background(0);
-  stroke(255);
-  
+  stroke(255); 
+  drawWaveForms();
+}
+
+void drawWaveForms() {
+ 
   /* draw the output waveforms, 'cus they look fancy. This can be commented
    * out without any consequence whatsoever.
    *
@@ -56,7 +60,7 @@ void draw() {
     line(x1, 50 + out.left.get(i)*50, x2, 50 + out.left.get(i+1)*50);
     line(x1, 150 + out.right.get(i)*50, x2, 150 + out.right.get(i+1)*50);
   }
-  
+ 
 }
 
 
