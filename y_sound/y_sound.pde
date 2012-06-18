@@ -40,15 +40,9 @@ void draw() {
 }
 
 void keyPressed() {
-
   if ( key == 'm' ) {
-
-    if ( au_out.isMuted() )
-
-    {
-
+    if ( au_out.isMuted() ) {
       au_out.unmute();
-
     } else {
       au_out.mute();
     }

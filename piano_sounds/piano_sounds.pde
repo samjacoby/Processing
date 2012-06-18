@@ -78,9 +78,7 @@ void drawWaveForms() {
    if (inString != null) {   
      inString = trim(inString);
      pitch = float(inString);
-     println(pitch);
      note = new MyNote(pitch, 0.3);
-   
    }
  }
  
