@@ -2,10 +2,11 @@ import ddf.minim.*;
 
 class SoundClip {
   
+  AudioSample clip;
   AudioRecorder recorder;
-  AudioPlayer clip;
   AudioInput in;
   Minim minim; 
+  
   String filename;
   
   SoundClip(Minim m) {
@@ -20,14 +21,17 @@ class SoundClip {
   }
 
   public void record() {
-  recorder.beginRecord();
+    
+    recorder.beginRecord();
   }
   
-  public void endRecording() {
+  public void endRecording() {  
     recorder.endRecord();
+    
     in.close();
-    this.save();
-    clip = m.loadFile(filename);
+    this.save();   
+    
+    clip = minim.loadSample(this.filename, 2048);
   }
 
   protected void save() {
@@ -35,4 +39,3 @@ class SoundClip {
   }
   
 }
-
