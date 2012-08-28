@@ -6,8 +6,6 @@ final int THRESHOLD = 500;
 final boolean SERIAL = false;
 final boolean DEBUG = true;
 
-
-
 Minim m;
 
 ArrayList <Box> boxes = new ArrayList();
@@ -136,34 +134,33 @@ void keyReleased()
        recording = false;
       
     } else {
-      
-      println("start recording");
-
-      s[sample_number] = new TapSample(m);    
-
-      myBox = new Box(int(random(screen_x)), int(random(screen_y)));
-      boxes.add(myBox);
-      myBox.drawBox(30,30);
-       
-      s[sample_number].record(); 
-      recording = true;
-    }
-  } else {
+        println("start recording");
   
-  int val = (int) key;
-  println("playing " + val);
-  val = val % NUM_CLIPS;
-  println(val);
+        s[sample_number] = new TapSample(m);    
   
-  assert(val >= 0 | val < NUM_CLIPS);
+        myBox = new Box(int(random(screen_x)), int(random(screen_y)));
+        boxes.add(myBox);
+        myBox.drawBox(30,30);
+         
+        s[sample_number].record(); 
+        recording = true;
+      }
+    } else {
+    
+    int val = (int) key;
+    println("playing " + val);
+    val = val % NUM_CLIPS;
+    println(val);
+    
+    assert(val >= 0 | val < NUM_CLIPS);
   
-  println("playing " + val);
-  try {
-    s[val].clip.trigger();
-  }  catch(NullPointerException e) {
-    println("uh oh");
-  }  
-}
+    println("playing " + val);
+    try {
+      s[val].clip.trigger();
+    } catch(NullPointerException e) {
+      println("uh oh");
+    }  
+  }
 }
 
 void mousePressed() {
