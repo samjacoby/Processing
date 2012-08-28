@@ -11,12 +11,20 @@ class Box {
     int width, height;
     color f_color;
     
+   TapSample sample;
+    
     Box(int x, int y) {
      
       this.f_color = color(0);
       this.x = x;
       this.y = y;
       
+    }
+    
+    
+    
+    public void setSample(TapSample s) {
+      this.sample = s;  
     }
     
     public void drawBox() {

@@ -78,10 +78,13 @@ void draw() {
     
     
     for(int i=0; i < boxes.size(); i++) {
+      
       b = boxes.get(i);
       if(b.mouseIsOver() && mousePressed) {
         b.f_color = color(random(255), random(255), random(255));
+        b.sample.play();
       }
+      
       b.drawBox();
     }
 
