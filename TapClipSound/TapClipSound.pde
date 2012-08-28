@@ -3,6 +3,9 @@ import processing.serial.*;
 
 final int NUM_CLIPS = 3;
 final int THRESHOLD = 500;
+final boolean SERIAL = false;
+final boolean DEBUG = true;
+
 
 
 Minim m;
@@ -37,14 +40,17 @@ void setup() {
   
   sample_number = 0;  
   s[sample_number] = new SoundClip(m);
-  println(Serial.list());
-  String portName = Serial.list()[0];
-  try {
-  myPort = new Serial(this, portName, 9600);   
-  } catch(Exception e) {
-     println(e); 
-     println("Running without serial input.");
-     useSerial = false;
+  
+  if(SERIAL) {
+    println(Serial.list());
+    String portName = Serial.list()[0];
+    try {
+    myPort = new Serial(this, portName, 9600);   
+    } catch(Exception e) {
+       println(e); 
+       println("Running without serial input.");
+       useSerial = false;
+    }
   }
 }
 
@@ -57,7 +63,7 @@ void draw() {
     
     background(204, 128, 56);
     
-    if(useSerial) {
+    if(SERIAL) {
       numRead = serialRead(inBuffer);
       
       if (numRead > 0) {
@@ -67,7 +73,7 @@ void draw() {
       
       if(ready) {
         checkTouch(capVal); 
-      }
+        }
       }
     
     
@@ -145,9 +151,7 @@ void keyReleased()
   val = val % NUM_CLIPS;
   println(val);
   
-  if(val < 0 | val > (NUM_CLIPS - 1)) {
-    println("FAIL");
-  }
+  assert(val >= 0 | val < NUM_CLIPS);
   
   println("playing " + val);
   try {
