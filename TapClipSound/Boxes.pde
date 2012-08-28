@@ -25,7 +25,12 @@ class Box {
       this.sample = s;  
     }
     
+    public void trigger() {
+      this.sample.trigger();
+    }
+    
     public void drawBox() {
+      
         rectMode(CORNER);
         fill(f_color);   
         rect(this.x, this.y, this.width, this.height);
@@ -33,20 +38,25 @@ class Box {
 
     
      public void drawBox(int width, int height) {
+       
         rectMode(CORNER);
         fill(f_color);
         this.width = width;
         this.height = height;
         rect(this.x, this.y, width, height);
+        
     }
    
     public void setDimensions(int width, int height) {
+      
         this.width = width;
         this.height = height;  
+        
     }
     
 
    public boolean mouseIsOver() {
+     
      if(XIntersect() && YIntersect()) {
        return true;
      }

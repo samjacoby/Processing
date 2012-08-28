@@ -10,8 +10,9 @@ class PaperClip {
 class Clip {
   
     Box soundBox;
+    int touchThreshold;
     
-    Clip(Box b;) {
+    Clip(Box b) {
       this.soundBox = b;
     }
     
@@ -21,6 +22,9 @@ class Clip {
     
     void setBox(Box b) {
       this.soundBox = b;  
-    }  
-  
+    }
+    
+    void isPressed() {
+        
+    }
 }

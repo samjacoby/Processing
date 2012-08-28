@@ -1,6 +1,7 @@
 import ddf.minim.*;
 import processing.serial.*;
 
+// Final vars
 final int NUM_CLIPS = 3;
 final int THRESHOLD = 500;
 final boolean SERIAL = false;
@@ -8,8 +9,9 @@ final boolean DEBUG = true;
 
 Minim m;
 
+// Keep track of exciting things
 ArrayList <Box> boxes = new ArrayList();
-TapSample[] s = new SoundClip[NUM_CLIPS];
+TapSample[] s = new TapSample[NUM_CLIPS];
 Serial myPort; 
 
 int sample_number;
@@ -80,7 +82,8 @@ void draw() {
       b = boxes.get(i);
       if(b.mouseIsOver() && mousePressed) {
         b.f_color = color(random(255), random(255), random(255));
-        b.sample.play();
+        background(random(255), random(255), random(255));
+        b.trigger();
       }
       
       b.drawBox();
@@ -126,10 +129,10 @@ void keyReleased()
       
        color c = color(random(255),random(255),random(255));
        myBox.f_color = c;
-       myBox.drawBox(30,30);
+       myBox.drawBox(30, 30);
             
        s[sample_number].endRecording();
-      
+       myBox.setSample(s[sample_number]);
        sample_number = (sample_number + 1) % NUM_CLIPS;
        recording = false;
       

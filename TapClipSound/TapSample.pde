@@ -25,6 +25,10 @@ class TapSample {
     recorder.beginRecord();
   }
   
+  public void trigger() {
+    this.clip.trigger();
+  }
+  
   public void endRecording() {  
     recorder.endRecord();
     
