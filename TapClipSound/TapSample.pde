@@ -7,6 +7,8 @@ class TapSample {
   AudioInput in;
   Minim minim; 
   
+  private final float thresholdSound = .001;
+  
   String filename;
   
   TapSample(Minim m) {
@@ -22,7 +24,10 @@ class TapSample {
 
   public void record() {
     
-    recorder.beginRecord();
+   // Don't record until we get meaningful levels
+   while(in.mix.level() < thresholdSound);
+
+   recorder.beginRecord();
   }
   
   public void trigger() {
@@ -35,8 +40,33 @@ class TapSample {
     in.close();
     this.save();   
     
+    this.loadSample();
+    
+  }
+  
+  private void loadSample() {
     clip = minim.loadSample(this.filename, 2048);
   }
+  
+  private void whiteSpaceScrub() {
+    
+       
+    
+         float[] leftChannel = clip.getChannel(BufferedAudio.LEFT);
+         float[] rightChannel = clip.getChannel(BufferedAudio.RIGHT);
+         println(leftChannel.length);
+         println(rightChannel.length);
+         float maxi = 0;
+         float mini = 0;
+           
+         for(int i=0; i < leftChannel.length; i++ ){
+           if(leftChannel[i] > thresholdSound) {
+            break; 
+           }
+         }
+         
+  }
+
 
   protected void save() {
     recorder.save();
