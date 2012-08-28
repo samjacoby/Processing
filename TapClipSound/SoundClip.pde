@@ -1,6 +1,6 @@
 import ddf.minim.*;
 
-class SoundClip {
+class TapSample {
   
   AudioSample clip;
   AudioRecorder recorder;
@@ -9,7 +9,7 @@ class SoundClip {
   
   String filename;
   
-  SoundClip(Minim m) {
+  TapSample(Minim m) {
     this.minim = m;
     this.in = minim.getLineIn(Minim.STEREO, 2048);
     this.filename = String.format("%s.%s", java.util.UUID.randomUUID(), "wav");  

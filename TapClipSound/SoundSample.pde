@@ -11,7 +11,7 @@ final boolean DEBUG = true;
 Minim m;
 
 ArrayList <Box> boxes = new ArrayList();;
-SoundClip[] s = new SoundClip[NUM_CLIPS];
+TapSample[] s = new SoundClip[NUM_CLIPS];
 Serial myPort; 
 
 int sample_number;
@@ -39,7 +39,7 @@ void setup() {
   m = new Minim(this);  
   
   sample_number = 0;  
-  s[sample_number] = new SoundClip(m);
+  s[sample_number] = new TapSample(m);
   
   if(SERIAL) {
     println(Serial.list());
@@ -135,7 +135,7 @@ void keyReleased()
     } else {
       
       println("start recording");
-      s[sample_number] = new SoundClip(m);    
+      s[sample_number] = new TapSample(m);    
 
       myBox = new Box(int(random(screen_x)), int(random(screen_y)));
       boxes.add(myBox);
