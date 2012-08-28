@@ -47,25 +47,6 @@ class TapSample {
   private void loadSample() {
     clip = minim.loadSample(this.filename, 2048);
   }
-  
-  private void whiteSpaceScrub() {
-    
-       
-    
-         float[] leftChannel = clip.getChannel(BufferedAudio.LEFT);
-         float[] rightChannel = clip.getChannel(BufferedAudio.RIGHT);
-         println(leftChannel.length);
-         println(rightChannel.length);
-         float maxi = 0;
-         float mini = 0;
-           
-         for(int i=0; i < leftChannel.length; i++ ){
-           if(leftChannel[i] > thresholdSound) {
-            break; 
-           }
-         }
-         
-  }
 
 
   protected void save() {
