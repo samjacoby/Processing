@@ -2,10 +2,10 @@
  *
  * Sound Box
  *
- * This represents a box of some kind.
+ * This represents a  of some kind.
  */
 
-class Box {
+class SoundBox {
 
    int x, y;
    int width, height;
@@ -13,7 +13,7 @@ class Box {
     
    TapSample sample;
     
-   Box(int x, int y) {
+   SoundBox(int x, int y) {
      
       this.f_color = color(0);
       this.x = x;
@@ -25,7 +25,7 @@ class Box {
       
       this.sample = s;  
     
-  }
+    }
     
     public void trigger() {
   

@@ -1,12 +1,15 @@
 import ddf.minim.*;
 
 class TapSample {
+
+  Minim minim; 
   
   AudioSample clip;
   AudioRecorder recorder;
   AudioInput in;
-  Minim minim; 
-  
+
+  private AudioSample recordingChime;
+
   private final float thresholdSound = .007;
   
   String filename;
@@ -16,6 +19,9 @@ class TapSample {
     this.in = minim.getLineIn(Minim.STEREO, 2048);
     this.filename = String.format("%s.%s", java.util.UUID.randomUUID(), "wav");  
     this.recorder = minim.createRecorder(in, filename, true);
+
+    // play a chime when recording
+    recordingChime.loadSample("assets/ding.wav");
   }
   
   public boolean isRecording() {
@@ -23,11 +29,14 @@ class TapSample {
   }
 
   public void record() {
-    
-   // Don't record until we get meaningful levels
+   
+    // this is going to cause problems 
+   recordingChime.trigger();
+   // don't record until we get meaningful levels
    while(in.mix.level() < thresholdSound);
 
    recorder.beginRecord();
+
   }
   
   public void trigger() {

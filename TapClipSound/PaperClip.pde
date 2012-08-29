@@ -4,50 +4,70 @@
  */
 
 class PaperClip {
-  
-  final int NUM_CLIPS = 3;
-  
-  private int TIMEOUT;
-  private ArrayList <Clip> clips = new ArrayList();
-  
-  // Clip mapping from PaperClip board
-  private int final clipMap[] = {0x01, 0x02, 0x04};
 
-  PaperClip() {
-    
-    for(int i=0; i < NUM_CLIPS; i++) {
-      clips.add(new Clip(this), clipMap[i]);
-    }  
-  }
+    Minim m;
   
-  public void update(int capVal) {
-    
-    // scan over active clips
-    for(int i = 0; i < NUM_CLIPS; i++) {
-        if(clips[i].isPressed(capVal)) {
-            clips[i].trigger();
+    final int NUM_CLIPS = 3;
+  
+    private int TIMER = 1000;
+    private ArrayList <Clip> clips = new ArrayList();
+  
+    // Clip mapping from PaperClip board
+    private int final clipMap[] = {0x01, 0x02, 0x04};
+
+
+    PaperClip(Minim m) {
+
+        this.m = m;
+
+        for(int i=0; i < NUM_CLIPS; i++) {
+          clips.add(new Clip(this), clipMap[i]);
         } 
-    }
-  }
-  
 
+    }
   
+    public void update(int capVal) {
+
+        TapSample ts = null;
+
+        // scan over active clips
+        for(int i = 0; i < NUM_CLIPS; i++) {
+            if(clips[i].isPressed(capVal)) {
+                if(!clips[i].isHeld()) { 
+                    if(clips[i].isRecording) {
+                        ts = clips[i].getSample();
+                        ts.save();  
+                    } else {
+                        clips[i].trigger();
+                    }
+                } else {
+                    TapSample ts = new TapSample(m);
+                    ts.record(); 
+                    clips[i].isRecording = true;
+                    clips[i].setSample(ts);
+                }
+            } 
+        }
+    }
 }
 
 
 
 class Clip {
   
-    Box soundBox;
-    int touchThreshold;
+    SoundBox soundBox;      // presently unused
+    TapSample soundSample;  // this clip's sample
 
-    boolean lastState;
-    int lastPressed;
+    int touchThreshold;     // sensitivity of the trigger
+
+    boolean lastState;      // last pressed state of this clip
+    int lastPressed;        // last pressed time 
     
-    int clipMap;
-    
-    boolean isPressed;
-    boolean isHeld;
+    int clipMap;            // ID of pin on board 
+
+    boolean isPressed;      // is this pin pressed?
+    boolean isHeld;         // forget pressed -- is it held down?
+    boolean isRecording;    // are we recording NOW?
     
     PaperClip parent;
     
@@ -65,29 +85,26 @@ class Clip {
       this.parent = p;
       this.clipMap = c;
       this.isPressed = false; // everything should be initalized unpressed
+      this.isRecording = false; // we're not recording now, punk
 
+    }
+
+    TapSample getSample() {
+      return soundBox;
     }
     
-    Clip(Box b) {
-      this.soundBox = b;
+    TapSample setSample(TapSample s) {
+      this.soundBox = s;  
     }
-
+    
     void trigger() {
         try {
-            this.soundBox.trigger(); 
+            this.soundSample.trigger(); 
         } catch(NullPointerException e) {
             println("No sound associated with clip " + clipMask);
         }
     }
-
     
-    Box getBox() {
-      return soundBox;
-    }
-    
-    void setBox(Box b) {
-      this.soundBox = b;  
-    }
  
     boolean protected isPressed(int bitMask) {
 
@@ -101,9 +118,9 @@ class Clip {
         } 
         
         if(lastState && isPressed) {
-            // we haven't changed state
+            // we haven't changed state after all
             if(millis() - lastTimePressed > parent.TIMER) {
-                // should trigger record 
+                isHeld = true; // this should trigger record in the mothership 
             } 
         }
 
@@ -112,11 +129,14 @@ class Clip {
             lastTimePressed = millis();
         }
 
-
         return isPressed;
     }
     
-    void isHeld() {
-        
+    boolean isHeld() {
+        return this.isHeld;    
+    }
+    
+    boolean isRecording() {
+        return this.isRecording;    
     }
 }

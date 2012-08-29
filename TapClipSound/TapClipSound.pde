@@ -71,7 +71,7 @@ int[] capVal = null;
 
 void draw() {
     
-    Box b;
+    SoundBox b;
     byte inByte = 0;
     
     background(173, 238, 238);
@@ -84,6 +84,7 @@ void draw() {
   
       // We're not ready until enough samples have been read.
       // TODO: this should allow any number of clips to be populated    
+      
       if(inByte != -1) {
           paperClip.update(inByte);
       }
@@ -117,8 +118,6 @@ void keyReleased()
   
   if(key==' ') {   
    
-   
-   
     if(recording) {
       
        println("stop recording");
@@ -139,7 +138,7 @@ void keyReleased()
   
         s[sample_number] = new TapSample(m);    
   
-        myBox = new Box(int(random(screen_x)), int(random(screen_y)));
+        myBox = new SoundBox(int(random(screen_x)), int(random(screen_y)));
 
         boxes.add(myBox);
         myBox.drawBox(30,30);
