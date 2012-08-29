@@ -22,11 +22,15 @@ class Box {
     }
     
     public void setSample(TapSample s) {
+      
       this.sample = s;  
-    }
+    
+  }
     
     public void trigger() {
+  
       this.sample.trigger();
+  
     }
     
     public void drawBox() {
@@ -46,7 +50,7 @@ class Box {
         rect(this.x, this.y, width, height);
         
     }
-   
+    
     public void setDimensions(int width, int height) {
       
         this.width = width;

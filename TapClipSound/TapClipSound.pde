@@ -18,7 +18,6 @@ int screen_x, screen_y;
 
 // Global Triggers
 Boolean recording = false;
-Boolean ready = false;
 Boolean useSerial = true;
 Boolean pressed = false;
 boolean serial = true;
@@ -77,16 +76,20 @@ void draw() {
     
     background(173, 238, 238);
     
+    // if we're using serial
     if(serial) {
   
+        // poll the serial port
       inByte = (byte) serialRead();
-      
-      if(ready && (inByte != -1)) {
-        checkTouch(inByte); 
-        }
+  
+      // We're not ready until enough samples have been read.
+      // TODO: this should allow any number of clips to be populated    
+      if(inByte != -1) {
+          paperClip.update(inByte);
       }
+    }
     
-    
+    // Draw boxes
     for(int i=0; i < boxes.size(); i++) {
       
       b = boxes.get(i);
@@ -101,42 +104,10 @@ void draw() {
       b.drawBox();
     }
 
-
 }
 
-color random_color() {
-  return color(random(255), random(255), random(255));
-}
 
-void checkTouch(byte capVal) {
-    if((capVal & 1) != 0) {
-      s[0].clip.trigger();
 
-    } 
-  
-    if((capVal & 2) != 0 ) {
-        s[1].clip.trigger();
-      
-    }
-    if((capVal & 4) != 0) {
-      
-      s[2].clip.trigger();
-    }
-    
-    
-}
-
-int serialRead() {
-  
-  int inByte = -1;
-  if ( myPort.available() > 0) {  // If data is available,
-
-    inByte = myPort.read();
- 
-  }
-  
-  return inByte;
-}
 
 
 
@@ -158,10 +129,7 @@ void keyReleased()
             
        s[sample_number].endRecording();
        myBox.setSample(s[sample_number]);
-        if(sample_number == (NUM_CLIPS - 1)) {
-      
-       ready = true;
-      } 
+
        sample_number = (sample_number + 1) % NUM_CLIPS;
        recording = false;
       
@@ -172,6 +140,7 @@ void keyReleased()
         s[sample_number] = new TapSample(m);    
   
         myBox = new Box(int(random(screen_x)), int(random(screen_y)));
+
         boxes.add(myBox);
         myBox.drawBox(30,30);
          
@@ -201,10 +170,26 @@ void mousePressed() {
   pressed = !pressed; 
 }
 
-void stop()
-{
+void stop() {
   m.stop();
   super.stop();
+}
+
+/*
+ *  Utiiities
+ *
+ */
+ 
+int serialRead() {
+  int inByte = -1;
+  if ( myPort.available() > 0) {  // If data is available,
+    inByte = myPort.read();
+  }  
+  return inByte;  // return -1 if no data is available
+}
+
+color random_color() {
+  return color(random(255), random(255), random(255));
 }
 
 
