@@ -44,11 +44,14 @@ class PaperClip {
                         c.trigger();
                     }
                 } else {
-                    ts = new TapSample(m);
-                    ts.record(); 
-                    c.isRecording = true;
-                    c.setSample(ts);
+                    if(!c.isRecording) {
+                        ts = new TapSample(m);
+                        ts.record(); 
+                        c.isRecording = true;
+                        c.setSample(ts);
+                    }
                 }
+
             } 
         }
     }
