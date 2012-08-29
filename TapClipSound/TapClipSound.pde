@@ -4,7 +4,6 @@ import processing.serial.*;
 // Final vars
 final int NUM_CLIPS = 3;
 final int THRESHOLD = 500;
-final boolean SERIAL = false;
 final boolean DEBUG = true;
 
 Minim m;
@@ -22,6 +21,8 @@ Boolean recording = false;
 Boolean ready = false;
 Boolean useSerial = true;
 Boolean pressed = false;
+boolean serial = true;
+
 
 Box myBox;
 
@@ -30,6 +31,8 @@ byte read_val;
 byte[] byteArray = new byte[10];
 
 void setup() {
+  
+  int i = 0;
   
   screen_x = 400;
   screen_y = 400;
@@ -41,38 +44,45 @@ void setup() {
   sample_number = 0;  
   s[sample_number] = new TapSample(m);
   
-  if(SERIAL) {
+  
+  // Initialize PaperClip
+  PaperClip paperClip = new PaperClip();
+
+  // Are we working with serial or not?  
+  if(serial) {
+    
     println(Serial.list());
     String portName = Serial.list()[0];
+    
     try {
-    myPort = new Serial(this, portName, 9600);   
+    
+       myPort = new Serial(this, portName, 9600);   
+    
     } catch(Exception e) {
+      
        println(e); 
        println("Running without serial input.");
-       useSerial = false;
+       
     }
   }
 }
 
-byte[] inBuffer = new byte[32];
+byte[] inBuffer = new byte[1];
 int[] capVal = null;
 
 void draw() {
+    
     Box b;
-    int numRead = 0;
+    byte inByte = 0;
     
-    background(204, 128, 56);
+    background(173, 238, 238);
     
-    if(SERIAL) {
-      numRead = serialRead(inBuffer);
+    if(serial) {
+  
+      inByte = (byte) serialRead();
       
-      if (numRead > 0) {
-        String myString = new String(inBuffer);
-        capVal = int(split(trim(myString), ',')); 
-      }    
-      
-      if(ready) {
-        checkTouch(capVal); 
+      if(ready && (inByte != -1)) {
+        checkTouch(inByte); 
         }
       }
     
@@ -80,10 +90,12 @@ void draw() {
     for(int i=0; i < boxes.size(); i++) {
       
       b = boxes.get(i);
+    
       if(b.mouseIsOver() && mousePressed) {
-        b.f_color = color(random(255), random(255), random(255));
-        background(random(255), random(255), random(255));
+        
+        b.f_color = random_color();
         b.trigger();
+        
       }
       
       b.drawBox();
@@ -92,23 +104,38 @@ void draw() {
 
 }
 
-void checkTouch(int[] capVal) {
-      println(capVal);
-      for(int i = 0; i < capVal.length; i++) {
-        if(capVal[i] > THRESHOLD) {
-          s[i].clip.trigger();
-        } 
-      }
+color random_color() {
+  return color(random(255), random(255), random(255));
 }
 
-int serialRead(byte[] inBuffer) {
-  int numRead = 0;
+void checkTouch(byte capVal) {
+    if((capVal & 1) != 0) {
+      s[0].clip.trigger();
+
+    } 
+  
+    if((capVal & 2) != 0 ) {
+        s[1].clip.trigger();
+      
+    }
+    if((capVal & 4) != 0) {
+      
+      s[2].clip.trigger();
+    }
+    
+    
+}
+
+int serialRead() {
+  
+  int inByte = -1;
   if ( myPort.available() > 0) {  // If data is available,
 
-    byte lf='\n';
-    numRead = myPort.readBytesUntil(lf, inBuffer);
+    inByte = myPort.read();
+ 
   }
-  return numRead;
+  
+  return inByte;
 }
 
 
@@ -119,9 +146,7 @@ void keyReleased()
   
   if(key==' ') {   
    
-    if(sample_number == (NUM_CLIPS - 1)) {
-       ready = true;
-    } 
+   
    
     if(recording) {
       
@@ -133,10 +158,15 @@ void keyReleased()
             
        s[sample_number].endRecording();
        myBox.setSample(s[sample_number]);
+        if(sample_number == (NUM_CLIPS - 1)) {
+      
+       ready = true;
+      } 
        sample_number = (sample_number + 1) % NUM_CLIPS;
        recording = false;
       
     } else {
+      
         println("start recording");
   
         s[sample_number] = new TapSample(m);    
@@ -148,16 +178,17 @@ void keyReleased()
         s[sample_number].record(); 
         recording = true;
       }
+      
     } else {
     
-    int val = (int) key;
-    println("playing " + val);
-    val = val % NUM_CLIPS;
-    println(val);
+      int val = (int) key;
+      println("playing " + val);
+      val = val % NUM_CLIPS;
+      println(val);
+      
+      assert(val >= 0 | val < NUM_CLIPS);
     
-    assert(val >= 0 | val < NUM_CLIPS);
-  
-    println("playing " + val);
+      println("playing " + val);
     try {
       s[val].clip.trigger();
     } catch(NullPointerException e) {

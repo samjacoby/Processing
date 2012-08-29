@@ -7,7 +7,7 @@ class TapSample {
   AudioInput in;
   Minim minim; 
   
-  private final float thresholdSound = .001;
+  private final float thresholdSound = .007;
   
   String filename;
   
@@ -35,17 +35,19 @@ class TapSample {
   }
   
   public void endRecording() {  
+    
     recorder.endRecord();
     
     in.close();
     this.save();   
-    
-    this.loadSample();
-    
+
+    this.loadSample();  
+
   }
   
   private void loadSample() {
-    clip = minim.loadSample(this.filename, 2048);
+    clip = minim.loadSample(this.filename);
+
   }
 
 
