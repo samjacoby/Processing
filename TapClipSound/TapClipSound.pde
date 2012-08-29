@@ -9,7 +9,7 @@ final boolean DEBUG = true;
 Minim m;
 
 // Keep track of exciting things
-ArrayList <Box> boxes = new ArrayList();
+ArrayList <SoundBox> boxes = new ArrayList();
 TapSample[] s = new TapSample[NUM_CLIPS];
 Serial myPort; 
 
@@ -17,13 +17,14 @@ int sample_number;
 int screen_x, screen_y;     
 
 // Global Triggers
-Boolean recording = false;
-Boolean useSerial = true;
-Boolean pressed = false;
+boolean recording = false;
+boolean useSerial = true;
+boolean pressed = false;
 boolean serial = true;
 
 
-Box myBox;
+SoundBox myBox;
+PaperClip paperClip;
 
 // Serial globals
 byte read_val;
@@ -45,7 +46,7 @@ void setup() {
   
   
   // Initialize PaperClip
-  PaperClip paperClip = new PaperClip();
+  paperClip = new PaperClip(m);
 
   // Are we working with serial or not?  
   if(serial) {

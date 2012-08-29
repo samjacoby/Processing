@@ -21,7 +21,7 @@ class TapSample {
     this.recorder = minim.createRecorder(in, filename, true);
 
     // play a chime when recording
-    recordingChime.loadSample("assets/ding.wav");
+    recordingChime = m.loadSample("assets/ding.wav", 2048);
   }
   
   public boolean isRecording() {
@@ -55,7 +55,7 @@ class TapSample {
   }
   
   private void loadSample() {
-    clip = minim.loadSample(this.filename);
+    clip = m.loadSample(this.filename);
 
   }
 
