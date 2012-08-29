@@ -9,12 +9,13 @@ class PaperClip {
   
     final int NUM_CLIPS = 3;
   
-    private int TIMER = 1000;
+    private int TIMER = 5000;
     private ArrayList <Clip> clips = new ArrayList();
   
     // Clip mapping from PaperClip board
     private int[] clipMap = {0x01, 0x02, 0x04};
 
+    private int lastCapVal = 0;
 
     PaperClip(Minim m) {
 
@@ -25,6 +26,22 @@ class PaperClip {
         } 
 
     }
+
+    public void closeAll() {
+      
+        TapSample ts = null;
+        Clip c = null;
+        
+        for(int i = 0; i < NUM_CLIPS; i++) {
+            c = clips.get(i);
+            if(c.isRecording) {
+                ts = c.getSample();
+                ts.endRecording();
+                ts.save();
+            }
+            c.clearSettings();
+        }
+    }
   
     public void update(int capVal) {
 
@@ -34,17 +51,13 @@ class PaperClip {
         // scan over active clips
         for(int i = 0; i < NUM_CLIPS; i++) {
             c = clips.get(i);
+
             if(c.isPressed(capVal)) {
                 if(!c.isHeld()) { 
-                    if(c.isRecording) {
-                        c.isRecording = false;
-                        ts = c.getSample();
-                        ts.save();  
-                    } else {
-                        c.trigger();
-                    }
+                    c.trigger();
                 } else {
                     if(!c.isRecording) {
+                        println("####### Recording on clip " + c.clipMap);
                         ts = new TapSample(m);
                         ts.record(); 
                         c.isRecording = true;
@@ -52,7 +65,13 @@ class PaperClip {
                     }
                 }
 
-            } 
+            } else if(c.isReleased && c.isRecording) {
+                println("Finishing recording on clip " + c.clipMap);
+                c.isRecording = false;
+                ts = c.getSample();
+                ts.endRecording();
+                ts.save();  
+            }
         }
     }
 }
@@ -73,6 +92,7 @@ class Clip {
 
     boolean isPressed;      // is this pin pressed?
     boolean isHeld;         // forget pressed -- is it held down?
+    boolean isReleased;     // was this clip just released? 
     boolean isRecording;    // are we recording NOW?
     
     PaperClip parent;
@@ -90,8 +110,9 @@ class Clip {
     Clip(PaperClip p, int c) {
       this.parent = p;
       this.clipMap = c;
-      this.isPressed = false; // everything should be initalized unpressed
-      this.isRecording = false; // we're not recording now, punk
+      this.isPressed = false; // everything should be initalized false
+      this.isRecording = false; 
+      this.isReleased = false; 
 
     }
 
@@ -106,6 +127,7 @@ class Clip {
     void trigger() {
         try {
             this.soundSample.trigger(); 
+            println("Play sound here.");
         } catch(NullPointerException e) {
             println("No sound associated with clip " + clipMap);
         }
@@ -114,26 +136,42 @@ class Clip {
  
     protected boolean isPressed(int bitMask) {
 
-        // record last state
-        lastState = isPressed;
 
+        // check serial data against this clip's value
         if((bitMask & clipMap ) != 0) {
             isPressed = true;
         } else {
             isPressed = false;     
         } 
+
+        if(!lastState && isPressed) {
+            println("FIRST PRESS");
+            for(int i=0;i< 10;i++) println("########");
+            // we've just pressed the button for the first time 
+            lastTimePressed = millis();
+        }  
         
         if(lastState && isPressed) {
-            // we haven't changed state after all
+            // we're being held down, still 
             if(millis() - lastTimePressed > parent.TIMER) {
+                println("WE ARE HELD.");
                 isHeld = true; // this should trigger record in the mothership 
+            } else {
+               isHeld = false;
             } 
         }
 
-        if(!lastState && isPressed) {
-            // we've toggled
-            lastTimePressed = millis();
+        if(lastState && !isPressed) {
+            // we've just let go of the button
+            isReleased = true;
+            // we could be transitioning straight from held
+            isHeld = false;
+        } else {
+            isReleased = false;
         }
+
+        // record last state
+        lastState = isPressed;
 
         return isPressed;
     }
@@ -145,4 +183,13 @@ class Clip {
     boolean isRecording() {
         return this.isRecording;    
     }
+
+    void clearSettings() {
+      this.isPressed = false; // everything should be initalized false
+      this.isRecording = false; 
+      this.isReleased = false; 
+      this.isHeld = false;
+    }
+
+
 }

@@ -31,10 +31,11 @@ class TapSample {
   public void record() {
    
     // this is going to cause problems 
+
    recordingChime.trigger();
    // don't record until we get meaningful levels
    while(in.mix.level() < thresholdSound);
-
+    println("<<<<<<<<<<<<<<<<<< RECORDING >>>>>>>>>>>>>>>>>");
    recorder.beginRecord();
 
   }

@@ -4,6 +4,8 @@ import processing.serial.*;
 // Final vars
 final int NUM_CLIPS = 3;
 final int THRESHOLD = 500;
+final int TIMEOUT = 500;
+int lastCheck = 0;
 final boolean DEBUG = true;
 
 Minim m;
@@ -88,6 +90,12 @@ void draw() {
       
       if(inByte != -1) {
           paperClip.update(inByte);
+          lastCheck = millis();
+      } else if(millis() - lastCheck > TIMEOUT) {
+          //println("closing..");
+          //paperClip.closeAll();
+          paperClip.update(0);
+          lastCheck = millis();
       }
     }
     
