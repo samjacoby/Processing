@@ -107,14 +107,7 @@ void draw() {
 
 }
 
-
-
-
-
-
-void keyReleased()
-{ 
-  
+void keyReleased() { 
   
   if(key==' ') {   
    
