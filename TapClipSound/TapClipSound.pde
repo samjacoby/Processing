@@ -1,12 +1,18 @@
 import ddf.minim.*;
 import processing.serial.*;
 
+final boolean DEBUG = true;
+
 // Final vars
 final int NUM_CLIPS = 3;
 final int THRESHOLD = 500;
-final int TIMEOUT = 500;
+
+final byte PRESS = (byte) 0xFE;
+final byte VALUE = (byte) 0x81;
+final byte END = (byte) 0xff;
+
+
 int lastCheck = 0;
-final boolean DEBUG = true;
 
 Minim m;
 
@@ -46,7 +52,6 @@ void setup() {
   sample_number = 0;  
   s[sample_number] = new TapSample(m);
   
-  
   // Initialize PaperClip
   paperClip = new PaperClip(m);
 
@@ -59,7 +64,8 @@ void setup() {
     try {
     
        myPort = new Serial(this, portName, 9600);   
-    
+       myPort.bufferUntil(END);
+       
     } catch(Exception e) {
       
        println(e); 
@@ -69,35 +75,13 @@ void setup() {
   }
 }
 
-byte[] inBuffer = new byte[1];
-int[] capVal = null;
-
 void draw() {
     
     SoundBox b;
     byte inByte = 0;
     
     background(173, 238, 238);
-    
-    // if we're using serial
-    if(serial) {
   
-        // poll the serial port
-      inByte = (byte) serialRead();
-  
-      // We're not ready until enough samples have been read.
-      // TODO: this should allow any number of clips to be populated    
-      
-      if(inByte != -1) {
-          paperClip.update(inByte);
-          lastCheck = millis();
-      } else if(millis() - lastCheck > TIMEOUT) {
-          //println("closing..");
-          //paperClip.closeAll();
-          paperClip.update(0);
-          lastCheck = millis();
-      }
-    }
     
     // Draw boxes
     for(int i=0; i < boxes.size(); i++) {
@@ -181,16 +165,22 @@ void stop() {
  *
  */
  
-int serialRead() {
-  int inByte = -1;
-  if ( myPort.available() > 0) {  // If data is available,
-    inByte = myPort.read();
-  }  
-  return inByte;  // return -1 if no data is available
-}
-
 color random_color() {
   return color(random(255), random(255), random(255));
+}
+
+void serialEvent(Serial p) {
+  int num;
+  
+  byte[] inBuffer = new byte[5];
+  num = p.readBytes(inBuffer);
+  
+  if(num == 5 && inBuffer[4] == END) { 
+    
+    paperClip.update(inBuffer);
+  
+  }
+
 }
 
 

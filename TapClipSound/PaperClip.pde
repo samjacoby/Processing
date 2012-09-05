@@ -7,13 +7,13 @@ class PaperClip {
 
     Minim m;
   
-    final int NUM_CLIPS = 3;
+    final int NUM_CLIPS = 6;
   
-    private int TIMER = 5000;
+    private int TIMER = 500;
     private ArrayList <Clip> clips = new ArrayList();
   
     // Clip mapping from PaperClip board
-    private int[] clipMap = {0x01, 0x02, 0x04};
+    private int[] clipMap = {1, 2, 4, 8, 16, 32 };
 
     private int lastCapVal = 0;
 
@@ -43,7 +43,7 @@ class PaperClip {
         }
     }
   
-    public void update(int capVal) {
+    public void update(byte[] buffer) {
 
         TapSample ts = null;
         Clip c = null;
@@ -52,7 +52,7 @@ class PaperClip {
         for(int i = 0; i < NUM_CLIPS; i++) {
             c = clips.get(i);
 
-            if(c.isPressed(capVal)) {
+            if(c.isPressed(buffer)) {
                 if(!c.isHeld()) { 
                     c.trigger();
                 } else {
@@ -134,13 +134,13 @@ class Clip {
     }
     
  
-    protected boolean isPressed(int bitMask) {
+    protected boolean isPressed(byte[] inBuffer) {
 
 
         // check serial data against this clip's value
-        if((bitMask & clipMap ) != 0) {
+        if(inBuffer[0] == PRESS && ((inBuffer[1] & clipMap) != 0) ) {
             isPressed = true;
-        } else {
+          } else {
             isPressed = false;     
         } 
 
