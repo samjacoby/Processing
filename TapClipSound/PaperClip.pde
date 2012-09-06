@@ -50,23 +50,26 @@ class PaperClip {
 
         // scan over active clips
         for(int i = 0; i < NUM_CLIPS; i++) {
-            c = clips.get(i);
+            
+          c = clips.get(i);
 
             if(c.isPressed(buffer)) {
-                if(!c.isTriggered) { 
-                    c.trigger();
-                    c.isTriggered = true;
-                } else {
-                    if(!c.isRecording) {
-                        println("####### Recording on clip " + c.clipMap);
+              
+                if(c.isHeld & !c.isRecording) {
+                  println("####### Recording on clip " + c.clipMap);
                         ts = new TapSample(m);
                         ts.record(); 
                         c.isRecording = true;
-                        c.setSample(ts);
-                    }
+    
+                       c.setSample(ts);
+   
+              } else if (!c.isTriggered) {
+    
+                    c.trigger();
+                    c.isTriggered = true;
                 }
 
-            } else if(c.isReleased && c.isRecording) {
+            } else if(c.isRecording) {
                 println("Finishing recording on clip " + c.clipMap);
                 c.isRecording = false;
                 ts = c.getSample();
@@ -147,17 +150,19 @@ class Clip {
             if((inBuffer[1] & clipMap) != 0) {
               isPressed = true;
               lastTimePressed = millis();
+              println("PRESS");
             } else if(((inBuffer[1] & clipMap) == 0) && isPressed) {
+              println("RELEASE");
               isPressed = false;
-              isHelf = false;
+              isHeld = false;
               isTriggered = false;
             }
          } 
          
          // check if we're still pressed
-         if(!isHeld && isPressed && (millis() - lastTimePressed > parent.TIMER) {
+         if(!isHeld && isPressed && (millis() - lastTimePressed > parent.TIMER)) {
              println("HOLD");
-             isHelf = true;
+             isHeld = true;
          }
 
         return isPressed;
