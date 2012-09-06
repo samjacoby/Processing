@@ -9,7 +9,7 @@ class PaperClip {
   
     final int NUM_CLIPS = 6;
   
-    private int TIMER = 500;
+    private int TIMER = 5000;
     private ArrayList <Clip> clips = new ArrayList();
   
     // Clip mapping from PaperClip board
@@ -53,8 +53,9 @@ class PaperClip {
             c = clips.get(i);
 
             if(c.isPressed(buffer)) {
-                if(!c.isHeld()) { 
+                if(!c.isTriggered) { 
                     c.trigger();
+                    c.isTriggered = true;
                 } else {
                     if(!c.isRecording) {
                         println("####### Recording on clip " + c.clipMap);
@@ -93,6 +94,7 @@ class Clip {
     boolean isPressed;      // is this pin pressed?
     boolean isHeld;         // forget pressed -- is it held down?
     boolean isReleased;     // was this clip just released? 
+    boolean isTriggered;      // has this clip been triggered?
     boolean isRecording;    // are we recording NOW?
     
     PaperClip parent;
@@ -108,11 +110,15 @@ class Clip {
      */
      
     Clip(PaperClip p, int c) {
-      this.parent = p;
-      this.clipMap = c;
+      
+      this.parent = p;   
+      this.clipMap = c;  // actual values relayed from hardware
+      
       this.isPressed = false; // everything should be initalized false
+      this.isTriggered = false;
       this.isRecording = false; 
-      this.isReleased = false; 
+      this.isReleased = false;
+      
 
     }
 
@@ -136,42 +142,23 @@ class Clip {
  
     protected boolean isPressed(byte[] inBuffer) {
 
-
         // check serial data against this clip's value
-        if(inBuffer[0] == PRESS && ((inBuffer[1] & clipMap) != 0) ) {
-            isPressed = true;
-          } else {
-            isPressed = false;     
-        } 
-
-        if(!lastState && isPressed) {
-            println("FIRST PRESS");
-            for(int i=0;i< 10;i++) println("########");
-            // we've just pressed the button for the first time 
-            lastTimePressed = millis();
-        }  
-        
-        if(lastState && isPressed) {
-            // we're being held down, still 
-            if(millis() - lastTimePressed > parent.TIMER) {
-                println("WE ARE HELD.");
-                isHeld = true; // this should trigger record in the mothership 
-            } else {
-               isHeld = false;
-            } 
-        }
-
-        if(lastState && !isPressed) {
-            // we've just let go of the button
-            isReleased = true;
-            // we could be transitioning straight from held
-            isHeld = false;
-        } else {
-            isReleased = false;
-        }
-
-        // record last state
-        lastState = isPressed;
+        if(inBuffer[0] == PRESS) {
+            if((inBuffer[1] & clipMap) != 0) {
+              isPressed = true;
+              lastTimePressed = millis();
+            } else if(((inBuffer[1] & clipMap) == 0) && isPressed) {
+              isPressed = false;
+              isHelf = false;
+              isTriggered = false;
+            }
+         } 
+         
+         // check if we're still pressed
+         if(!isHeld && isPressed && (millis() - lastTimePressed > parent.TIMER) {
+             println("HOLD");
+             isHelf = true;
+         }
 
         return isPressed;
     }

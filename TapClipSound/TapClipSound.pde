@@ -7,9 +7,9 @@ final boolean DEBUG = true;
 final int NUM_CLIPS = 3;
 final int THRESHOLD = 500;
 
-final byte PRESS = (byte) 0xFE;
-final byte VALUE = (byte) 0x81;
-final byte END = (byte) 0xff;
+final byte PRESS = (byte) 0x33;
+final byte VALUE = (byte) 0xCC;
+final byte END = (byte) 0xFF;
 
 
 int lastCheck = 0;
@@ -81,7 +81,6 @@ void draw() {
     byte inByte = 0;
     
     background(173, 238, 238);
-  
     
     // Draw boxes
     for(int i=0; i < boxes.size(); i++) {
