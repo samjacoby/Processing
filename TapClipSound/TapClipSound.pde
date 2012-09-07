@@ -42,11 +42,14 @@ void setup() {
   
   int i = 0;
   
-  screen_x = 400;
-  screen_y = 400;
+  screen_x = 800;
+  screen_y = 800;
   
   size(screen_x, screen_y);
   //size(displayWidth, displayHeight);
+  
+  background(102);
+
 
   m = new Minim(this);  
   
@@ -81,7 +84,9 @@ void draw() {
     SoundBox b;
     byte inByte = 0;
     
-    background(173, 238, 238);
+    
+    
+    
     
     // Draw boxes
     for(int i=0; i < boxes.size(); i++) {
@@ -165,24 +170,17 @@ void stop() {
  *
  */
  
-boolean sketchFullScreen() {
-  return true;
-} 
  
 color random_color() {
   return color(random(255), random(255), random(255));
 }
 
 void serialEvent(Serial p) {
-  int num;
-  
   byte[] inBuffer = new byte[10];
-  num = p.readBytes(inBuffer);
+  int num = p.readBytes(inBuffer);
   if(num == 7 && inBuffer[6] == END) { 
       paperClip.update(inBuffer);
-  
   }
-
 }
 
 

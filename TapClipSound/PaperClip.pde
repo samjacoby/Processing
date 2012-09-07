@@ -59,6 +59,8 @@ class PaperClip {
                         if(c.soundSample != null) {
                           delay(c.soundSample.clip.length());
                         }
+                   println("####### NOW! on clip " + c.clipMap);
+
                         ts = new TapSample(m);
                         ts.record(); 
                         c.isRecording = true;
@@ -151,20 +153,18 @@ class Clip {
     protected boolean isPressed(byte[] inBuffer) {
 
         // check serial data against this clip's value
-        if(inBuffer[0] == PRESS) {
-            if((inBuffer[1] & clipMap) != 0) {
+        if(inBuffer[0] == PRESS) {  // first byte holds the event type
+            if((inBuffer[1] & clipMap) != 0) {  // is this clip touched?
               isPressed = true;
               lastTimePressed = millis();
-              println("PRESS on " + clipMap);
-            } else if(((inBuffer[1] & clipMap) == 0) && isPressed) {
-              println("RELEASE on " + clipMap);
+            } else if(((inBuffer[1] & clipMap) == 0) && isPressed) { // was this clip touched--and released?
               isPressed = false;
               isHeld = false;
               isTriggered = false;
             }
          } 
          
-         // check if we're still pressed
+         // check if we're still pressed and initiate hold if we are
          if(!isHeld && isPressed && (millis() - lastTimePressed > parent.TIMER)) {
              println("HOLD");
              isHeld = true;
