@@ -79,29 +79,31 @@ void setup() {
   }
 }
 
+int eH = 50;
+int eW = 50;
+
 void draw() {
     
     SoundBox b;
+    Clip c;
     byte inByte = 0;
     
+    Iterator <Clip> clips = paperClip.getClipsIter();
     
-    
-    
-    
-    // Draw boxes
-    for(int i=0; i < boxes.size(); i++) {
-      
-      b = boxes.get(i);
-    
-      if(b.mouseIsOver() && mousePressed) {
-        
-        b.f_color = random_color();
-        b.trigger();
-        
-      }
-      
-      b.drawBox();
+    int i = 1;
+    while(clips.hasNext()) {
+       c = clips.next(); 
+       if(c.isRecording) {
+                  fill(209, 25, 25);
+       } else if(c.isPressed) {
+          fill(255,255,255);
+       } else {
+         fill(0,0,0);
+       }
+       ellipse( i * (width/(paperClip.numClips() + 1)), (height/2), eH, eW);
+       i++;
     }
+    
 
 }
 

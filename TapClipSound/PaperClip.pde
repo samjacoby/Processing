@@ -26,7 +26,7 @@ class PaperClip {
         } 
 
     }
-
+/*
     public void closeAll() {
       
         TapSample ts = null;
@@ -41,6 +41,10 @@ class PaperClip {
             }
             c.clearSettings();
         }
+    }*/
+  
+    public int numClips() {
+       return NUM_CLIPS; 
     }
   
     public void update(byte[] buffer) {
@@ -84,6 +88,10 @@ class PaperClip {
             
           }
         }
+    }
+    
+    Iterator <Clip> getClipsIter() {
+      return clips.iterator();  
     }
 }
 
