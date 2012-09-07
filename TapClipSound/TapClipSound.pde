@@ -97,6 +97,8 @@ void draw() {
                   fill(209, 25, 25);
        } else if(c.isPressed) {
           fill(255,255,255);
+       } else if(c.isPlaying()){
+         fill(159, 179, 207);
        } else {
          fill(0,0,0);
        }

@@ -84,8 +84,9 @@ class PaperClip {
                 c.isRecording = false;
                 ts = c.getSample();
                 ts.endRecording();
-                ts.save();  
-            
+                ts.save();
+                c.clipLength = ts.getLength();
+              
           }
         }
     }
@@ -105,14 +106,22 @@ class Clip {
     int touchThreshold;     // sensitivity of the trigger
 
     boolean lastState;      // last pressed state of this clip
-    int lastTimePressed;        // last pressed time 
+    int lastTimePressed;    // last pressed time 
+    
+    int clipLength;         // the clip length in millis
     
     int clipMap;            // ID of pin on board 
+
+    /*
+     * TODO: take care of this rats nests of booleans.
+     *
+     */
+     
 
     boolean isPressed;      // is this pin pressed?
     boolean isHeld;         // forget pressed -- is it held down?
     boolean isReleased;     // was this clip just released? 
-    boolean isTriggered;      // has this clip been triggered?
+    boolean isTriggered;    // has this clip been triggered?
     boolean isRecording;    // are we recording NOW?
     
     PaperClip parent;
@@ -137,7 +146,6 @@ class Clip {
       this.isRecording = false; 
       this.isReleased = false;
       
-
     }
 
     TapSample getSample() {
@@ -146,6 +154,14 @@ class Clip {
     
     void setSample(TapSample s) {
       this.soundSample = s;  
+    }
+    
+    public boolean isPlaying() {
+      if(millis() - lastTimePressed < clipLength) {
+        return true;  
+      }
+      
+      return false;
     }
     
     void trigger() {

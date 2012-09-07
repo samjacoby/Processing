@@ -51,6 +51,14 @@ class TapSample {
     this.clip.trigger();
   }
   
+  public AudioClip getClip() {
+    return clip;
+  }
+  
+  public int getLength() {
+    return this.clip.length();  
+  }
+  
   public void endRecording() {  
     
     recorder.endRecord();
