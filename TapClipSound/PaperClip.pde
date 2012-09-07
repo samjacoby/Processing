@@ -7,13 +7,13 @@ class PaperClip {
 
     Minim m;
   
-    final int NUM_CLIPS = 6;
+    final int NUM_CLIPS = 5;
   
-    private int TIMER = 5000;
+    private int TIMER = 2000;
     private ArrayList <Clip> clips = new ArrayList();
   
     // Clip mapping from PaperClip board
-    private int[] clipMap = {1, 2, 4, 8, 16, 32 };
+    private int[] clipMap = {1, 2, 4, 8, 16 };
 
     private int lastCapVal = 0;
 
@@ -44,19 +44,21 @@ class PaperClip {
     }
   
     public void update(byte[] buffer) {
-
         TapSample ts = null;
         Clip c = null;
 
         // scan over active clips
         for(int i = 0; i < NUM_CLIPS; i++) {
             
-          c = clips.get(i);
+            c = clips.get(i);
 
             if(c.isPressed(buffer)) {
-              
+               
                 if(c.isHeld & !c.isRecording) {
                   println("####### Recording on clip " + c.clipMap);
+                        if(c.soundSample != null) {
+                          delay(c.soundSample.clip.length());
+                        }
                         ts = new TapSample(m);
                         ts.record(); 
                         c.isRecording = true;
@@ -70,12 +72,15 @@ class PaperClip {
                 }
 
             } else if(c.isRecording) {
+              
                 println("Finishing recording on clip " + c.clipMap);
+                
                 c.isRecording = false;
                 ts = c.getSample();
                 ts.endRecording();
                 ts.save();  
-            }
+            
+          }
         }
     }
 }
@@ -150,9 +155,9 @@ class Clip {
             if((inBuffer[1] & clipMap) != 0) {
               isPressed = true;
               lastTimePressed = millis();
-              println("PRESS");
+              println("PRESS on " + clipMap);
             } else if(((inBuffer[1] & clipMap) == 0) && isPressed) {
-              println("RELEASE");
+              println("RELEASE on " + clipMap);
               isPressed = false;
               isHeld = false;
               isTriggered = false;

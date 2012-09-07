@@ -8,20 +8,21 @@ class TapSample {
   AudioRecorder recorder;
   AudioInput in;
 
-  private AudioSample recordingChime;
+  private AudioSnippet recordingChime;
 
   private final float thresholdSound = .007;
   
   String filename;
   
   TapSample(Minim m) {
+    
     this.minim = m;
     this.in = minim.getLineIn(Minim.STEREO, 2048);
     this.filename = String.format("%s.%s", java.util.UUID.randomUUID(), "wav");  
     this.recorder = minim.createRecorder(in, filename, true);
 
     // play a chime when recording
-    recordingChime = m.loadSample("assets/ding.wav", 2048);
+    recordingChime = m.loadSnippet("assets/ding.wav");
   }
   
   public boolean isRecording() {
@@ -32,10 +33,16 @@ class TapSample {
    
     // this is going to cause problems 
 
-   recordingChime.trigger();
+  /* recordingChime.play();
+   while(recordingChime.isPlaying()) {
+    delay(5);
+   }
+   recordingChime.rewind();   
+*/
+   
    // don't record until we get meaningful levels
    while(in.mix.level() < thresholdSound);
-    println("<<<<<<<<<<<<<<<<<< RECORDING >>>>>>>>>>>>>>>>>");
+   println("<<<<<<<<<<<<<<<<<< RECORDING >>>>>>>>>>>>>>>>>");
    recorder.beginRecord();
 
   }

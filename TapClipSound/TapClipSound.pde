@@ -46,7 +46,8 @@ void setup() {
   screen_y = 400;
   
   size(screen_x, screen_y);
-  
+  //size(displayWidth, displayHeight);
+
   m = new Minim(this);  
   
   sample_number = 0;  
@@ -164,6 +165,10 @@ void stop() {
  *
  */
  
+boolean sketchFullScreen() {
+  return true;
+} 
+ 
 color random_color() {
   return color(random(255), random(255), random(255));
 }
@@ -171,12 +176,10 @@ color random_color() {
 void serialEvent(Serial p) {
   int num;
   
-  byte[] inBuffer = new byte[5];
+  byte[] inBuffer = new byte[10];
   num = p.readBytes(inBuffer);
-  
-  if(num == 5 && inBuffer[4] == END) { 
-    
-    paperClip.update(inBuffer);
+  if(num == 7 && inBuffer[6] == END) { 
+      paperClip.update(inBuffer);
   
   }
 
