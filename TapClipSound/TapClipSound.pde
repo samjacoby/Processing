@@ -31,6 +31,8 @@ boolean recording = false;
 boolean useSerial = true;
 boolean pressed = false;
 boolean serial = true;
+boolean saveFile = false;
+boolean openFile = false;
 
 PaperClip paperClip;
 
@@ -125,6 +127,9 @@ void draw() {
        
     }
     
+    saveFile();
+    openFile();
+    
 
 }
   
@@ -136,38 +141,11 @@ void keyReleased() {
   }
   if(key == 's') {
      saveFile = true;
-     filepath = selectOutput();
-  
-  
-    if (filepath == null) {
-      println("No output file was selected...");
-    } else {
-      println("Saving to " + filepath);
-      Iterator <Clip> clips = paperClip.getClipsIter();
-      int i = 0;  
-      while(clips.hasNext()) {
-         Clip c = clips.next(); 
-         if(c.hasSample()) {
-             filenames[i] = c.getFilename();
-         } else {
-           filenames[i] = "none";
-         }
-         i++;
-      }
-      saveStrings(filepath, filenames);
-    }
+    
   }
   if(key == 'o') {
     openFile = true;
-    filepath = selectInput(); 
-    if(filepath  == null) {
-      println("No input file was selected...");
-    } else {
-      println("Opening file " + filepath);
-      filenames = loadStrings(filepath);
-      println(filenames);
-      paperClip = new PaperClip(m, filenames);
-    }
+   
   }
    
  /* if(key=='o') {   
@@ -235,6 +213,53 @@ void keyReleased() {
       println("uh oh");
     }  
   }*/
+}
+
+
+void openFile() {
+  
+  if(openFile) {
+     String filepath = "";
+  String [] filenames = new String[paperClip.numClips()];
+    openFile = false;
+     filepath = selectInput(); 
+    if(filepath  == null) {
+      println("No input file was selected...");
+    } else {
+      println("Opening file " + filepath);
+      filenames = loadStrings(filepath);
+      println(filenames);
+      paperClip = new PaperClip(m, filenames);
+    }
+  }  
+}
+
+void saveFile() {
+  if(saveFile) {
+    saveFile = false;
+    String filepath = "";
+  String [] filenames = new String[paperClip.numClips()];
+   filepath = selectOutput();
+  
+  
+    if (filepath == null) {
+      println("No output file was selected...");
+    } else {
+      println("Saving to " + filepath);
+      Iterator <Clip> clips = paperClip.getClipsIter();
+      int i = 0;  
+      while(clips.hasNext()) {
+         Clip c = clips.next(); 
+         if(c.hasSample()) {
+             filenames[i] = c.getFilename();
+         } else {
+           filenames[i] = "none";
+         }
+         i++;
+      }
+      saveStrings(filepath, filenames);
+    }
+  }  
 }
 
 void mousePressed() {
