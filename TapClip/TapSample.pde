@@ -16,10 +16,9 @@ class TapSample {
   String dir = "sounds";
   
   TapSample(Minim m) {
-    
     this.minim = m;
     this.in = minim.getLineIn(Minim.STEREO, 2048);
-    this.filename = String.format("%s%s%s.%s", dir, File.separator, java.util.UUID.randomUUID(), "wav");  
+    this.filename = dataPath(String.format("%s.%s", java.util.UUID.randomUUID(), "wav"));
     this.recorder = minim.createRecorder(in, filename, true);
 
     // play a chime when recording
