@@ -16,6 +16,9 @@ class PaperClip {
     private int[] clipMap = {1, 2, 4, 8, 16 };
 
     private int lastCapVal = 0;
+    
+    private color[] clipColors;
+    private String name; 
 
     PaperClip(Minim m) {
 
@@ -26,22 +29,28 @@ class PaperClip {
         } 
 
     }
-/*
-    public void closeAll() {
-      
-        TapSample ts = null;
-        Clip c = null;
+    
+    PaperClip(Minim m, String[] filenames) {
         
-        for(int i = 0; i < NUM_CLIPS; i++) {
-            c = clips.get(i);
-            if(c.isRecording) {
-                ts = c.getSample();
-                ts.endRecording();
-                ts.save();
-            }
-            c.clearSettings();
-        }
-    }*/
+        TapSample ts;
+        Clip c;
+        this.m = m; 
+        
+        for(int i=0; i < NUM_CLIPS; i++) {
+          c = new Clip(this, clipMap[i]);
+          println(filenames[i]);
+          println(filenames[i].getClass().getName());
+          if(!filenames[i].equals("none")) {
+            println("!??");
+            ts = new TapSample(m, filenames[i]);
+            c.setSample(ts);
+          }
+          println("here?");
+          clips.add(c);
+        } 
+
+      
+    }
   
     public int numClips() {
        return NUM_CLIPS; 
@@ -63,11 +72,12 @@ class PaperClip {
                         if(c.soundSample != null) {
                           delay(c.soundSample.clip.length());
                         }
+                                                c.isRecording = true;
+
                    println("####### NOW! on clip " + c.clipMap);
 
                         ts = new TapSample(m);
                         ts.record(); 
-                        c.isRecording = true;
     
                        c.setSample(ts);
    
@@ -83,6 +93,7 @@ class PaperClip {
                 
                 c.isRecording = false;
                 ts = c.getSample();
+                delay(200);
                 ts.endRecording();
                 ts.save();
                 c.clipLength = ts.getLength();
@@ -100,7 +111,6 @@ class PaperClip {
 
 class Clip {
   
-    SoundBox soundBox;      // presently unused
     TapSample soundSample;  // this clip's sample
 
     int touchThreshold;     // sensitivity of the trigger
@@ -152,8 +162,23 @@ class Clip {
       return soundSample;
     }
     
+    public String getFilename() {
+      return this.getSample().getFilename();
+          }
+    
     void setSample(TapSample s) {
       this.soundSample = s;  
+    }
+    
+    public boolean hasSample() {
+      if(soundSample != null) {
+        return true;
+      }
+      return false;
+    }
+    
+    void clearSample() {
+      this.soundSample = null;  
     }
     
     public boolean isPlaying() {

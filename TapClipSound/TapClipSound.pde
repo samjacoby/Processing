@@ -1,5 +1,7 @@
 import ddf.minim.*;
 import processing.serial.*;
+import javax.swing.JFileChooser;
+
 
 final boolean DEBUG = true;
 
@@ -17,7 +19,7 @@ int lastCheck = 0;
 Minim m;
 
 // Keep track of exciting things
-ArrayList <SoundBox> boxes = new ArrayList();
+ArrayList <PaperClip> pages = new ArrayList();
 TapSample[] s = new TapSample[NUM_CLIPS];
 Serial myPort; 
 
@@ -30,8 +32,6 @@ boolean useSerial = true;
 boolean pressed = false;
 boolean serial = true;
 
-
-SoundBox myBox;
 PaperClip paperClip;
 
 // Serial globals
@@ -79,41 +79,118 @@ void setup() {
   }
 }
 
-int eH = 50;
-int eW = 50;
+
+
+color[] colors = {random_color(), random_color(), random_color(), random_color(), random_color()};
 
 void draw() {
     
-    SoundBox b;
+    int eH = 75;
+    int eW = 75;
+
+    background(102);
+    
     Clip c;
     byte inByte = 0;
     
     Iterator <Clip> clips = paperClip.getClipsIter();
     
     int i = 1;
+
     while(clips.hasNext()) {
        c = clips.next(); 
        if(c.isRecording) {
-                  fill(209, 25, 25);
+         fill(209, 25, 25);
        } else if(c.isPressed) {
           fill(255,255,255);
        } else if(c.isPlaying()){
-         fill(159, 179, 207);
+         fill(255);
+    
+    
        } else {
-         fill(0,0,0);
+         fill(colors[i-1]);
        }
-       ellipse( i * (width/(paperClip.numClips() + 1)), (height/2), eH, eW);
+
+       if(c.hasSample()){
+         ellipse( i * (width/(paperClip.numClips() + 1)), (height/2), eH, eW);
+       } else if(!c.isPressed) {
+          fill(0);
+          ellipse( i * (width/(paperClip.numClips() + 1)), (height/2), 25, 25);
+
+       } else {
+          ellipse( i * (width/(paperClip.numClips() + 1)), (height/2), 25, 25);
+       }
+
        i++;
+       
     }
     
 
 }
-
-void keyReleased() { 
   
-  if(key==' ') {   
+void keyReleased() {   
+  String filepath = "";
+  String [] filenames = new String[paperClip.numClips()];
+  if(key == ENTER) {
+    return;
+  }
+  if(key == 's') {
+     saveFile = true;
+     filepath = selectOutput();
+  
+  
+    if (filepath == null) {
+      println("No output file was selected...");
+    } else {
+      println("Saving to " + filepath);
+      Iterator <Clip> clips = paperClip.getClipsIter();
+      int i = 0;  
+      while(clips.hasNext()) {
+         Clip c = clips.next(); 
+         if(c.hasSample()) {
+             filenames[i] = c.getFilename();
+         } else {
+           filenames[i] = "none";
+         }
+         i++;
+      }
+      saveStrings(filepath, filenames);
+    }
+  }
+  if(key == 'o') {
+    openFile = true;
+    filepath = selectInput(); 
+    if(filepath  == null) {
+      println("No input file was selected...");
+    } else {
+      println("Opening file " + filepath);
+      filenames = loadStrings(filepath);
+      println(filenames);
+      paperClip = new PaperClip(m, filenames);
+    }
+  }
    
-    if(recording) {
+ /* if(key=='o') {   
+     JFileChooser chooser = new JFileChooser();
+     File dataDir = new File(sketchPath, "sounds");
+     if (!dataDir.exists()) {
+        dataDir.mkdirs();
+     }
+     chooser.setSelectedFile(dataDir); 
+
+     chooser.setFileFilter(chooser.getAcceptAllFileFilter());
+      int returnVal = chooser.showOpenDialog(null);
+      if (returnVal == JFileChooser.APPROVE_OPTION) {
+        println("You chose to open this file: " + chooser.getSelectedFile().getName());
+      }
+      try {
+      File file = chooser.getSelectedFile();
+      } catch(Exception e) {
+        println("Failed to open this file.");
+      }
+  }*/
+ 
+/*    if(recording) {
       
        println("stop recording");
       
@@ -157,7 +234,7 @@ void keyReleased() {
     } catch(NullPointerException e) {
       println("uh oh");
     }  
-  }
+  }*/
 }
 
 void mousePressed() {
@@ -176,11 +253,11 @@ void stop() {
  
  
 color random_color() {
-  return color(random(255), random(255), random(255));
+  return color(random(100), random(255), random(255));
 }
 
 void serialEvent(Serial p) {
-  byte[] inBuffer = new byte[10];
+  byte[] inBuffer = new byte[12];
   int num = p.readBytes(inBuffer);
   if(num == 7 && inBuffer[6] == END) { 
       paperClip.update(inBuffer);

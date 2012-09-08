@@ -13,16 +13,27 @@ class TapSample {
   private final float thresholdSound = .007;
   
   String filename;
+  String dir = "sounds";
   
   TapSample(Minim m) {
     
     this.minim = m;
     this.in = minim.getLineIn(Minim.STEREO, 2048);
-    this.filename = String.format("%s.%s", java.util.UUID.randomUUID(), "wav");  
+    this.filename = String.format("%s%s%s.%s", dir, File.separator, java.util.UUID.randomUUID(), "wav");  
     this.recorder = minim.createRecorder(in, filename, true);
 
     // play a chime when recording
-    recordingChime = m.loadSnippet("assets/ding.wav");
+    //recordingChime = m.loadSnippet("assets/ding.wav");
+  }
+  
+  TapSample(Minim m, String filename) {
+    
+    this.minim = m;
+    this.in = minim.getLineIn(Minim.STEREO, 2048);
+    this.filename = filename;
+    this.recorder = minim.createRecorder(in, filename, true);
+    
+    this.loadSample();
   }
   
   public boolean isRecording() {
@@ -51,12 +62,17 @@ class TapSample {
     this.clip.trigger();
   }
   
-  public AudioClip getClip() {
+  public AudioSample getClip() {
     return clip;
   }
   
   public int getLength() {
     return this.clip.length();  
+  }
+  
+  public String getFilename() {
+    return this.filename;
+    
   }
   
   public void endRecording() {  
