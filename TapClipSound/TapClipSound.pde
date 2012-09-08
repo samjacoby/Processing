@@ -41,7 +41,8 @@ byte read_val;
 byte[] byteArray = new byte[10];
 
 void setup() {
-  
+  frame.setTitle("PaperClip v.1: MIT Media Lab");
+
   int i = 0;
   
   screen_x = 800;
