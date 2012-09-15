@@ -57,6 +57,7 @@ class PaperClip {
     }
   
     public void update(byte[] buffer) {
+      
         TapSample ts = null;
         Clip c = null;
 
@@ -206,10 +207,13 @@ class Clip {
             if((inBuffer[1] & clipMap) != 0) {  // is this clip touched?
               isPressed = true;
               lastTimePressed = millis();
+              println("Clip " + clipMap + "pressed!");
             } else if(((inBuffer[1] & clipMap) == 0) && isPressed) { // was this clip touched--and released?
               isPressed = false;
               isHeld = false;
               isTriggered = false;
+              println("Clip " + clipMap + "released!");
+
             }
          } 
          

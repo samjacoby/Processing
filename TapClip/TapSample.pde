@@ -4,6 +4,8 @@ class TapSample {
 
   Minim minim; 
   
+  private int triggerCount = 0;
+  
   AudioSample clip;
   AudioRecorder recorder;
   AudioInput in;
@@ -58,6 +60,7 @@ class TapSample {
   }
   
   public void trigger() {
+    triggerCount++;
     this.clip.trigger();
   }
   

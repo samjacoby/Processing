@@ -13,6 +13,11 @@ final byte PRESS = (byte) 0x33;
 final byte VALUE = (byte) 0xCC;
 final byte END = (byte) 0xFF;
 
+String[] serialPorts; // list of serial ports
+
+
+long lastSerial = 0;
+long TIMEOUT_SERIAL = 1000;
 
 int lastCheck = 0;
 
@@ -46,14 +51,13 @@ void setup() {
 
   int i = 0;
   
-  screen_x = 800;
+  screen_x = 1280;
   screen_y = 800;
   
   size(screen_x, screen_y);
   //size(displayWidth, displayHeight);
   
   background(102);
-
 
   m = new Minim(this);  
   
@@ -66,8 +70,9 @@ void setup() {
   // Are we working with serial or not?  
   if(serial) {
     
-    println(Serial.list());
-    String portName = Serial.list()[0];
+    serialPorts = Serial.list();
+    println(serialPorts);
+    String portName = serialPorts[0];
     
     try {
     
@@ -131,8 +136,18 @@ void draw() {
     
     saveFile();
     openFile();
-    
+    //serialOpen();
 
+}
+
+void serialOpen() {
+  if(Serial.list()[0] != serialPorts[0] && Serial.list().length == serialPorts.length) {
+    println("new serial!");
+    myPort.clear();
+    myPort.stop();
+    myPort = new Serial(this, Serial.list()[0], 9600);   
+    myPort.bufferUntil(END);
+  }  
 }
   
 void keyReleased() {   
@@ -222,7 +237,7 @@ void openFile() {
   
   if(openFile) {
      String filepath = "";
-  String [] filenames = new String[paperClip.numClips()];
+    String [] filenames = new String[paperClip.numClips()];
     openFile = false;
      filepath = selectInput(); 
     if(filepath  == null) {
@@ -237,12 +252,13 @@ void openFile() {
 }
 
 void saveFile() {
+  
   if(saveFile) {
+    
     saveFile = false;
     String filepath = "";
-  String [] filenames = new String[paperClip.numClips()];
-   filepath = selectOutput();
-  
+    String [] filenames = new String[paperClip.numClips()];
+    filepath = selectOutput();
   
     if (filepath == null) {
       println("No output file was selected...");
