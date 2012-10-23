@@ -19,24 +19,29 @@ int step = 10;
 
 void draw() { 
 
-    while(y < screen_h) {
-        Node n = new Node();
-        while(x < screen_w) {
-            draw_box(x, y, 10);
-            x += step;
-    }
-    x = 0;
-    y += step;
-  }
-  
- 
-  endRecord();
 }
 
-void draw_box(int origin_x, int origin_y, int side_s) {
-  fill(random(0, 255));
-  rect(origin_x, origin_y, origin_x + side_s, origin_y + side_s);
-} 
+class Pane {//{{{
+    
+    private Node[][] nPane;
+
+    Pane(int xPane, int yPane, int size) {
+        Node[][] nPane = new Node[xPane][yPane]; 
+        this.nPane = nPane;
+        xCurrent = 0;
+        yCurrent = 0;
+    }
+
+    public Node get(int x, int y) {
+        return this.nPane = nPane[x][y];
+    } 
+
+    public Node[][] get_nPane() {
+        return nPane; 
+    }
+    
+}//}}}
+
 class Node {//{{{
 
     public int x, y;
@@ -59,22 +64,4 @@ class Node {//{{{
 }
 
   
-}//}}}
-class Pane {//{{{
-    
-    private Node[][] nPane;
-
-    Pane() {
-        Node[][] nPane = new Node[xPane][yPane]; 
-        this.nPane = nPane;
-    }
-
-    public Node get(int x, int y) {
-        return this.nPane = nPane[x][y];
-    } 
-
-    public Node[][] get_nPane() {
-        return nPane; 
-    }
-    
 }//}}}
