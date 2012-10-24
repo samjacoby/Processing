@@ -1,18 +1,31 @@
 import processing.pdf.*;
+import java.util.BitSet;
 
 int xPane = 100, yPane = 100;
 int screen_h = 1000;
 int screen_w = 1000;
-int nSize = screen_w/xPane; 
+int nSize = screen_h/yPane; 
 
-ArrayList ruleList = new ArrayList<Rule>;
-
+ArrayList<Rule> ruleList = new ArrayList<Rule>();
 
 Pane pane; 
 
-void setup() {
+void setup() {//{{{
     
     noLoop();
+    noStroke();
+
+    // set rules
+    Rule r = new Rule((byte)3);
+    ruleList.add(r);
+    r = new Rule((byte)5);
+    ruleList.add(r);
+    r = new Rule((byte)6);
+    ruleList.add(r);
+    r = new Rule((byte)2);
+    ruleList.add(r);
+    r = new Rule((byte)4);
+    ruleList.add(r);
 
     size(screen_w, screen_h);
     background(255);
@@ -22,74 +35,54 @@ void setup() {
 
     // initialize with empty 
     Node n;
-    for(int i = 0; i < xPane; i++) {
-        for(int j = 0; j < yPane; j++) {
-            n = new Node(i, j, nSize);
-            pane.set(i, j, n);
+    for(int i = 0; i < yPane; i++) {
+        for(int j = 0; j < xPane; j++) {
+            n = new Node(j, i, nSize);
+            pane.set(j, i, n);
         }
     }
 
-    // set rules
-    r = new Rule(true, false, false);
-    ruleList.add(r);
-    r = new Rule(true, true, false);
-    ruleList.add(r);
 
     //beginRecord(PDF, "filename.pdf"); 
-}
-
-void draw() { 
+}//}}}
+void draw() { //{{{
 
     Node n, m;
 
-    n = pane.get(0, 0);
-    n.setOn();
-    n = pane.get(1, 5);
-    n.setOn();
-    n = pane.get(2, 50);
+    n = pane.get(99, 0);
     n.setOn();
 
-    for(int i = 0; i < xPane; i++) {
-        for(int j = 0; j < yPane; j++) {
-            n = pane.get(i, j);
+    for(int i = 0; i < yPane; i++) {
+        for(int j = 0; j < xPane; j++) {
+            n = pane.get(j, i);
             ruleCheck(n);
             n.draw();
         }
     }
 
-}
+}//}}}
+public void ruleCheck(Node n) {//{{{
 
-void ruleCheck(Node n) {
-    Node u,i,o;
-
-    u = pane.get(i - 1, j - 1);
-    i = pane.get(i - 1, j);
-    o = pane.get(i - 1, j + 1);
-
+    byte neighbors = pane.getNeighbors(n);
     for(Rule r: ruleList) {
-        
-
+        if(r.rule == neighbors) {
+            //println(r.rule);
+            //println(n.x + " " + n.y);
+            n.setOn();
+            break;
+        }
+         
     }
-    
-    if(m != null && m.isOn) {
-        n.setOn(); 
-    }
-}
-
-class Rule {
+}//}}}
+class Rule {//{{{
    
-    public boolean a, b, c  
+    public byte rule;
 
-    Rule(boolean a, boolean b, boolean c) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
+    Rule(byte b) {
+        this.rule = b;
     }
 
-
-}
-
-
+}//}}}
 class Pane {//{{{
     
     private Node[][] nPane;
@@ -97,6 +90,21 @@ class Pane {//{{{
     Pane(int xPane, int yPane, int nSize) {
         Node[][] nPane = new Node[xPane][yPane]; 
         this.nPane = nPane;
+    }
+
+    public byte getNeighbors(Node n) {
+        Node m; 
+        byte b = 0;
+        int[] table = {-1,0,1};
+        for(int i = 0; i < 3; i++) {
+            m = this.get(n.x + table[i], n.y - 1);
+            if(m != null && m.isOn) {
+                //println("found rule matching -- x: " + m.x + ", " + m.y);
+                //println("origin square -- x: " + n.x + ", " + n.y);
+                b |= 1 << i;
+            }
+        }
+        return b;
     }
 
     public Node get(int x, int y) {
@@ -115,7 +123,6 @@ class Pane {//{{{
 
     
 }//}}}
-
 class Node {//{{{
 
     public int x, y, xOrigin, yOrigin;
@@ -147,7 +154,6 @@ class Node {//{{{
         } else {
             fill(255); 
         }
-//        println(xOrigin + " " + yOrigin + " " + nSize);
 
         rect(xOrigin, yOrigin, xOrigin + nSize, yOrigin + nSize);
   }
