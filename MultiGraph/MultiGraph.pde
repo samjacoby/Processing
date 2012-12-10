@@ -77,8 +77,8 @@ void serialEvent (Serial myPort) {
         // color background according to touchmask
         for(int i=0; i<numPins; i++) {
             if(((1L << i) & inBuffer[1]) != 0) {
-                fill(200,100,100);
-                rect(0, rowHeight * i, width, rowHeight);
+                fill(193);
+                rect(0, rowHeight * (4 - i), width, rowHeight);
             }
         }
         
