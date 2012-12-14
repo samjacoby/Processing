@@ -15,7 +15,7 @@ final int NUMPINS = 5;      // Number of inputs we want to graph
 final int START = -2;
 // Buffer until something < 127 or bufferUntil fails
 final char END = 0x71;
-final int MESSAGESIZE = 8;
+final int MESSAGESIZE = 15;
 
 // List of the number of segments in the slider
 final int OFFSET = 1;
@@ -28,8 +28,10 @@ void setup () {//{{{
 
     println(Serial.list());
     try {
-    myPort = new Serial(this, Serial.list()[0], 57600);
-    } except 
+        myPort = new Serial(this, Serial.list()[0], 57600);
+    } catch(Exception e) { 
+        println(e.getMessage());
+    }
 
     // don't generate a serialEvent() unless you get an END charachter
     myPort.bufferUntil(int(END));
@@ -69,36 +71,51 @@ class Segment {//{{{
         maxVal = (newMax > maxVal) ? newMax: maxVal; 
     }
 
-    float normVal(int val) {
+    float normVal(int val, float normal) {
         if(val > maxVal) {
             println("Value out of range: recalibrating..."); 
             this.setMax(val);
         }
-        float norm = (float)val/maxVal;
+        float norm = (float)val/normal * segmentOffset;
         println(val + " : " + norm + " : " + maxVal + " : " + segmentOffset);
         return norm;
     }
 }//}}}
 
+void calibrateSegments(byte[] inBuffer) {
+    int i = 0;
+    for(Segment s: segmentList) {
+        s.setMax(inBuffer[i+2]);
+        i++;
+    }
+
+
+}
+
 void serialEvent(Serial myPort) {//{{{
 
-    byte[] inBuffer = new byte[8];
-
+    byte[] inBuffer = new byte[MESSAGESIZE];
+    int i = 0, sumValues = 0;
+    float totalNormalized = 0, finalVal = 0;
     int bytesRead = myPort.readBytesUntil(END, inBuffer);
 
     if(bytesRead > 0 && (inBuffer[0] == START) && (inBuffer[inBuffer.length -1 ] == END)) { 
         if(calibrate) {
             calibrateSegments(inBuffer);
         } else {
-            int i = 2;
+            for(i = 2; i < inBuffer.length - 1; i++) {
+                sumValues += inBuffer[i]; 
+            }
+            i = 2;
             for(Segment s: segmentList) {
-                s.normVal(inBuffer[i]);
+                totalNormalized += s.normVal(inBuffer[i], sumValues);
                 i++;
             }
+            finalVal = totalNormalized/NUMPINS;
+            println(finalVal);
         }
     }
 }//}}}
-
 /**
  * Accept commands 
  **/
