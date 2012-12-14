@@ -26,8 +26,10 @@ Boolean calibrate = false;
 
 void setup () {//{{{
 
-    println(Serial.list());
+    screen(400, 100);
+
     try {
+        println(Serial.list());
         myPort = new Serial(this, Serial.list()[0], 57600);
     } catch(Exception e) { 
         println(e.getMessage());
@@ -101,7 +103,7 @@ void serialEvent(Serial myPort) {//{{{
         if(calibrate) {
             calibrateSegments(inBuffer);
         } else {
-            for(i = 2; i < MESSAGESIZE - 2; i++) {
+            for(i = 2; i < MESSAGESIZE - 1; i++) {
                 sumValues += inBuffer[i]; 
             }
             if(sumValues > THRESHOLD) {
