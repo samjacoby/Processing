@@ -26,7 +26,8 @@ Boolean calibrate = false;
 
 void setup () {//{{{
 
-    screen(400, 100);
+    background(0);
+    size(400, 100);
 
     try {
         println(Serial.list());
@@ -43,11 +44,10 @@ void setup () {//{{{
     }
 }//}}}
 
-void draw () {//{{{
-// everything happens in the serialEvent()
+void draw () {
 }
 
-void calibrate() {
+void calibrate() {//{{{
     calibrate = !calibrate;
     for(Segment s: segmentList) {
         if(!calibrate) 
@@ -56,7 +56,8 @@ void calibrate() {
         s.maxVal = 0;
         }
     }
-}//}}}
+}
+//}}}
 class Segment {//{{{
     int maxVal = 1;
 
@@ -84,18 +85,19 @@ class Segment {//{{{
     }
 }//}}}
 
-void calibrateSegments(byte[] inBuffer) {
+void calibrateSegments(byte[] inBuffer) {//{{{
     int i = 0;
     for(Segment s: segmentList) {
         s.setMax(inBuffer[i+2]);
         i++;
     }
-}
+}//}}}
 
 void serialEvent(Serial myPort) {//{{{
+    background(0);
 
     byte[] inBuffer = new byte[MESSAGESIZE];
-    int i = 0, sumValues = 0;
+    int i = 0, sumValues = 0, xCord;
     float totalNormalized = 0, finalVal = 0;
     int bytesRead = myPort.readBytesUntil(END, inBuffer);
 
@@ -114,6 +116,9 @@ void serialEvent(Serial myPort) {//{{{
                 }
                 finalVal = totalNormalized/NUMPINS;
                 println(finalVal);
+                xCord = floor(map(finalVal, .2, 1, 10, 390));
+                fill(160, 100, 35);
+                ellipse(xCord, 50, 18,18);
             }
         }
     } else {
