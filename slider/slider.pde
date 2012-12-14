@@ -15,7 +15,7 @@ final int NUMPINS = 5;      // Number of inputs we want to graph
 final int START = -2;
 // Buffer until something < 127 or bufferUntil fails
 final char END = 0x71;
-final int MESSAGESIZE = 15;
+final int MESSAGESIZE = 8;
 
 // List of the number of segments in the slider
 final int OFFSET = 1;
@@ -88,8 +88,6 @@ void calibrateSegments(byte[] inBuffer) {
         s.setMax(inBuffer[i+2]);
         i++;
     }
-
-
 }
 
 void serialEvent(Serial myPort) {//{{{
@@ -99,21 +97,25 @@ void serialEvent(Serial myPort) {//{{{
     float totalNormalized = 0, finalVal = 0;
     int bytesRead = myPort.readBytesUntil(END, inBuffer);
 
-    if(bytesRead > 0 && (inBuffer[0] == START) && (inBuffer[inBuffer.length -1 ] == END)) { 
+    if(bytesRead > 0 && (inBuffer[0] == START) && (inBuffer[MESSAGESIZE - 1] == END)) { 
         if(calibrate) {
             calibrateSegments(inBuffer);
         } else {
-            for(i = 2; i < inBuffer.length - 1; i++) {
+            for(i = 2; i < MESSAGESIZE - 2; i++) {
                 sumValues += inBuffer[i]; 
             }
-            i = 2;
-            for(Segment s: segmentList) {
-                totalNormalized += s.normVal(inBuffer[i], sumValues);
-                i++;
+            if(sumValues > THRESHOLD) {
+                i = 2;
+                for(Segment s: segmentList) {
+                    totalNormalized += s.normVal(inBuffer[i], sumValues);
+                    i++;
+                }
+                finalVal = totalNormalized/NUMPINS;
+                println(finalVal);
             }
-            finalVal = totalNormalized/NUMPINS;
-            println(finalVal);
         }
+    } else {
+        myPort.clear();
     }
 }//}}}
 /**
