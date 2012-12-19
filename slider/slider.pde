@@ -75,12 +75,13 @@ void calibrate() {//{{{
 }
 //}}}
 class Segment {//{{{
+
+    int segmentOffset; // this value determines the segments position
     int maxVal = 1;
+    int currentVal = 0;
 
-    int segmentOffset;
+    Segment nextSegement = null;
 
-    Segment nextSegment;
-    Segment prevSegment;
 
     Segment(int segmentOffset) {
         this.segmentOffset = segmentOffset;
@@ -91,7 +92,7 @@ class Segment {//{{{
     }
 
     float normVal(int val, float normal) {
-        if(val > maxVal) {
+        if(val > maxVal) { // keep track of maximum values
             println("Value out of range: recalibrating..."); 
             this.setMax(val);
         }
@@ -111,7 +112,8 @@ void calibrateSegments(byte[] inBuffer) {//{{{
 
 void serialEvent(Serial myPort) {//{{{
 
-
+    background(0);
+    /*
     sampleCount++;
     if(sampleCount >= sampleMax) {
         background(0);
@@ -122,6 +124,7 @@ void serialEvent(Serial myPort) {//{{{
         sampleVal = 0;
         sampleCount = 0; 
     }
+    */
 
     byte[] inBuffer = new byte[MESSAGESIZE];
     int[] inBufferInt = new int[NUMPINS];
@@ -136,8 +139,8 @@ void serialEvent(Serial myPort) {//{{{
             calibrateSegments(inBuffer);
         } else {
 
-            // java has no unsigned bytes. boo.
             for(i=0;i < NUMPINS; i++ ){
+                // java has no unsigned bytes. boo.
                 inBufferInt[i] = (inBuffer[i+2] < 0) ? inBuffer[i+2] + 256 : inBuffer[i+2]; 
             }
 
@@ -163,7 +166,9 @@ void serialEvent(Serial myPort) {//{{{
                 finalVal = totalNormalized/NUMPINS;
                 mappedVal_f = floor(map(finalVal, .2, 1, 10, 390));
                 //mappedVal_f = map(finalVal, .2, 1, 0, 2*PI);
-                sampleVal += mappedVal_f;
+                //sampleVal += mappedVal_f;
+                m.update(mappedVal_f, 200);
+                m.display();
             }
         }
     } else {
