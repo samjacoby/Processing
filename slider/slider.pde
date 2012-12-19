@@ -51,8 +51,10 @@ void setup () {//{{{
     // don't generate a serialEvent() unless you get an END charachter
     myPort.bufferUntil(int(END));
 
+    int offset[] = {4,3,1,2,5}; // control ordering
+
     for(int i=0; i< NUMPINS;i++) {
-        segmentList.add(new Segment(OFFSET + i)); 
+        segmentList.add(new Segment(offset[i])); 
     }
 
     m = new Marker();
