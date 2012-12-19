@@ -2,7 +2,7 @@ import processing.serial.*;
 
 Serial myPort;        // The serial port
 
-final int NUMPINS = 5;      // Number of inputs we want to graph
+final int NUMPINS = 5;      // Number of inputs 
 
 /**
  * Packet Specifications 
@@ -19,12 +19,22 @@ final int MESSAGESIZE = 8;
 
 // List of the number of segments in the slider
 final int OFFSET = 1;
-ArrayList<Segment> segmentList = new ArrayList<Segment>();
+List<Segment> segmentList = new ArrayList<Segment>();
 
-// Utility variables
+/**
+ * Utility Variables
+ **/
 Boolean calibrate = false;
+Boolean wrapAround = true; // should we wrap around?
 // Anything below this isn't a touch.
 float THRESHOLD = .2; 
+// Average over a number of samples
+float sampleVal = 0;
+int sampleCount = 0;
+int sampleMax = 3;
+
+// Things to Draw
+Marker m;
 
 void setup () {//{{{
 
@@ -44,10 +54,15 @@ void setup () {//{{{
     for(int i=0; i< NUMPINS;i++) {
         segmentList.add(new Segment(OFFSET + i)); 
     }
+
+    m = new Marker();
+
 }//}}}
+
 void draw () {//{{{
     // Nothing happens here at all. 
 }//}}}
+
 void calibrate() {//{{{
     calibrate = !calibrate;
     for(Segment s: segmentList) {
@@ -82,7 +97,7 @@ class Segment {//{{{
         }
         float normedVal = ((float)val/maxVal)/normal;
         float norm = normedVal * segmentOffset; // normalize & apply offset 
-        println(val + " : " + maxVal +" : " + normedVal  + " : " + normal);
+        //println(val + " : " + maxVal +" : " + normedVal  + " : " + normal);
         return norm;
     }
 }//}}}
@@ -93,52 +108,69 @@ void calibrateSegments(byte[] inBuffer) {//{{{
         i++;
     }
 }//}}}
-void drawShape(float val) {//{{{
-    fill(160, 100, 35);
-    //ellipse(75 * cos(val) + 200, 75 * sin(val) + 200, 18,18);
-    ellipse(val, 200, 18, 18);
-}//}}}
+
 void serialEvent(Serial myPort) {//{{{
-    background(0);
+
+
+    sampleCount++;
+    if(sampleCount >= sampleMax) {
+        background(0);
+        println(sampleVal);
+        fill(200);
+        m.update(sampleVal/sampleMax, 200);
+        m.display();
+        sampleVal = 0;
+        sampleCount = 0; 
+    }
 
     byte[] inBuffer = new byte[MESSAGESIZE];
+    int[] inBufferInt = new int[NUMPINS];
+
     int i = 0, mappedVal;
     float totalNormalized = 0, sumValues = 0, finalVal = 0, mappedVal_f;
     int bytesRead = myPort.readBytesUntil(END, inBuffer);
 
     if(bytesRead > 0 && (inBuffer[0] == START) && (inBuffer[MESSAGESIZE - 1] == END)) { 
+
         if(calibrate) {
             calibrateSegments(inBuffer);
         } else {
 
-//            for(i = 2; i < MESSAGESIZE - 1; i++) {
-//                sumValues += inBuffer[i]; 
-//            }
-            i = 2;
+            // java has no unsigned bytes. boo.
+            for(i=0;i < NUMPINS; i++ ){
+                inBufferInt[i] = (inBuffer[i+2] < 0) ? inBuffer[i+2] + 256 : inBuffer[i+2]; 
+            }
 
+            //println(inBufferInt);
+
+            // get normalization values
+            i = 0;
             for(Segment s: segmentList) {
-                assert(inBuffer[i] >= 0); 
-                sumValues += (float)inBuffer[i]/s.maxVal; // normalize each value
+                assert(inBufferInt[i] >= 0); 
+                sumValues += (float)inBufferInt[i]/s.maxVal; // normalize each value
                 i++;
             }
 
-            println("sumValues: " + sumValues);
             if(sumValues > THRESHOLD) {
-                i = 2;
+                i = 0;
                 for(Segment s: segmentList) {
-                    totalNormalized += s.normVal(inBuffer[i], sumValues);
+                    totalNormalized += s.normVal(inBufferInt[i], sumValues);
                     i++;
                 }
+
+                //println(totalNormalized);
+                
                 finalVal = totalNormalized/NUMPINS;
                 mappedVal_f = floor(map(finalVal, .2, 1, 10, 390));
                 //mappedVal_f = map(finalVal, .2, 1, 0, 2*PI);
-                drawShape(mappedVal_f);
+                sampleVal += mappedVal_f;
             }
         }
     } else {
         myPort.clear();
     }
 }//}}}
+
 /**
  * Accept commands 
  **/
@@ -156,5 +188,34 @@ void keyReleased() {   //{{{
         } 
     }
 }//}}}
+
+class Marker {
+    float x, y;
+    float w=20, h=20;
+
+    void update(float x, float y ) {
+        this.x = x;
+        this.y = y;
+    }
+
+    void update(float x, float y, float w, float h) {
+        this.x = x;
+        this.y = y;
+        this.w = w; 
+        this.h = h;
+    }
+    
+    void display() {
+        fill(160, 100, 35);
+        //ellipse(75 * cos(val) + 200, 75 * sin(val) + 200, 18,18);
+        ellipse(x, y, w, h);
+    }//}}}
+        
+    
+    
+}
+
+
+
 
 
