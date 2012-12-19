@@ -115,18 +115,6 @@ void calibrateSegments(byte[] inBuffer) {//{{{
 void serialEvent(Serial myPort) {//{{{
 
     background(0);
-    /*
-    sampleCount++;
-    if(sampleCount >= sampleMax) {
-        background(0);
-        println(sampleVal);
-        fill(200);
-        m.update(sampleVal/sampleMax, 200);
-        m.display();
-        sampleVal = 0;
-        sampleCount = 0; 
-    }
-    */
 
     byte[] inBuffer = new byte[MESSAGESIZE];
     int[] inBufferInt = new int[NUMPINS];
@@ -141,14 +129,16 @@ void serialEvent(Serial myPort) {//{{{
             calibrateSegments(inBuffer);
         } else {
 
+            String smsg = ""; 
             for(i=0;i < NUMPINS; i++ ){
-                // java has no unsigned bytes. boo.
+                // java has no unsigned bytes. boo. no negatives.
                 inBufferInt[i] = (inBuffer[i+2] < 0) ? inBuffer[i+2] + 256 : inBuffer[i+2]; 
+                smsg += inBufferInt[i] + ", ";
             }
+            println(smsg);
 
-            //println(inBufferInt);
 
-            // get normalization values
+            // get normalization values for each segment
             i = 0;
             for(Segment s: segmentList) {
                 assert(inBufferInt[i] >= 0); 
@@ -163,7 +153,6 @@ void serialEvent(Serial myPort) {//{{{
                     i++;
                 }
 
-                //println(totalNormalized);
                 
                 finalVal = totalNormalized/NUMPINS;
                 mappedVal_f = floor(map(finalVal, .2, 1, 10, 390));
