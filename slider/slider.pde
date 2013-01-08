@@ -127,7 +127,6 @@ void serialEvent(Serial myPort) {//{{{
                     i++;
                 }
                 
-                //finalVal = totalNormalized/NUMPINS;
                 //mappedVal_f = floor(map(finalVal, .2, 1, 10, 390));
                 mappedVal_f = map(finalVal, .2, 1, 0, 2*PI);
                 println("unmapped: " + totalNormalized + ", mapped: " + mappedVal_f);
@@ -169,7 +168,7 @@ interface Marker {
     float[] direction;    // array of numbers representing different directions
     void update(float x, float y ); 
     void update(float x, float y, float w, float h); 
-    void findDirection(List<Segment> segments);
+    void plot(List<Segment> segments);
     void display(); 
 
 }
@@ -185,25 +184,29 @@ class Segment {//{{{
     float rawVal;
     float maxVal;
     float selfNormalizedVal;
-    float direction;
+    float groupNormalizedVal;
 
     public void setRawVal(int newRawVal) {
         this.rawVal = (float) newRawVal;
-    }
-
-    public void normalizeVal() {
         updateMax();
+    }
+
+    public float getSelfNormalizedVal() {
         selfNormalize();
+        return selfNormalizedVal;
     
     }
 
-    // ?
-    public float getNormalizedVal(float totalNormalized) {
-        return selfNormalizedVal/totalNormalized;
-    
+    public float getGroupNormalizedVal(float totalVal) {
+        groupNormalize(totalVal);
+        return groupNormalizedVal; 
     }
 
-    private selfNormalize() {
+    public groupNormalize(float totalVal) {
+        groupNormalizedVal = selfNormalizedVal / totalVal; 
+    }
+
+    public selfNormalize() {
         selfNormalizedVal = rawVal / maxVal; 
     }
 
@@ -246,10 +249,15 @@ class Segment {//{{{
  **/
 class Slider implements Marker {
 
-    float direction[] = {4,3,1,2,5}; // control ordering
+    float direction[] = {1,2,3,4,5};
 
     float x, y;
     float w=20, h=20;
+
+    void update(float v) {
+        this.x = v;
+        this.y = v;
+    }
 
     void update(float x, float y ) {
         this.x = x;
@@ -262,14 +270,38 @@ class Slider implements Marker {
         this.h = h;
     }
 
-    void findDirection(List<Segment> segments) {
-    
+    void plot(List<Segment> segments) {
+        int i = 0, j = 0;
+        float totalValue = 0, checkValue = 0, averageValue = 0;
+
+        // normalize initial values and get totals
+        for(Segment s: segments) {
+            totalValue += s.getNormalizedVal(); 
+        }
+
+        // normalize each value against all values
+        for(Segment s:segments) {
+            s.groupNormalize(totalValue);
+        }
+
+        for(Segment s: segments) {
+            checkValue += s.groupNormalizedVal;
+        }
+
+        assert(checkValue == 1);
+
+        i = 0;
+        for(Segment s: segments) {
+            averageValue += s.getNormalizedVal * direction[i];
+        }
+
+        update(averageValue);
     }
     
     void display() {
         fill(160, 100, 35);
         ellipse(x, y, w, h);
-    }//}}}
+    }
     
 }
 
@@ -295,7 +327,33 @@ class Wheel implements Marker {
         this.h = h;
     }
 
-    void findPosition(List<Segment> segmentList) {
+    void plot(List<Segment> segmentList) {
+        int i = 0, j = 0;
+        float totalValue = 0, checkValue = 0, averageValue = 0;
+
+        // normalize initial values and get totals
+        for(Segment s: segments) {
+            totalValue += s.getNormalizedVal(); 
+        }
+
+        // normalize each value against all values
+        for(Segment s:segments) {
+            s.groupNormalize(totalValue);
+        }
+
+        for(Segment s: segments) {
+            checkValue += s.groupNormalizedVal;
+        }
+
+        assert(checkValue == 1);
+
+        float xVal = segments.get(1).groupNormalizedVal * directions[1] - 
+            segments.get(3).groupNormalizedVal * directions(3);
+
+        float yVal = segments.get(0).groupNormalizedVal * directions[0] - 
+            segments.get(2).groupNormalizedVal * directions(2);
+
+        update(xVal, yVal);
     
     }
 
