@@ -166,31 +166,41 @@ void keyReleased() {   //{{{
  **/ 
 interface Marker {
 
-    // A series of numbers corresponding to a sequential offset of each element
-    float[] offset;
-
+    float[] direction;    // array of numbers representing different directions
     void update(float x, float y ); 
     void update(float x, float y, float w, float h); 
+    void findDirection(List<Segment> segments);
     void display(); 
 
 }
 
 /**
- * Every Marker has a number of segments
+ * This is a marker segment. It keeps track of its maximum 
+ * value and normalizes itself against that. That's about it.
  *
  **/
-interface Segment {
 
-}
-
-class Segment {
+class Segment {//{{{
 
     float rawVal;
     float maxVal;
     float selfNormalizedVal;
+    float direction;
 
-    public updateRawVal(int newRawVal) {
+    public void setRawVal(int newRawVal) {
         this.rawVal = (float) newRawVal;
+    }
+
+    public void normalizeVal() {
+        updateMax();
+        selfNormalize();
+    
+    }
+
+    // ?
+    public float getNormalizedVal(float totalNormalized) {
+        return selfNormalizedVal/totalNormalized;
+    
     }
 
     private selfNormalize() {
@@ -201,7 +211,7 @@ class Segment {
         maxVal = (rawVal > maxVal) ? rawVal: maxVal; 
     }
 
-}
+}//}}}
 
 class Segment {//{{{
 
@@ -236,7 +246,7 @@ class Segment {//{{{
  **/
 class Slider implements Marker {
 
-    float offset[] = {4,3,1,2,5}; // control ordering
+    float direction[] = {4,3,1,2,5}; // control ordering
 
     float x, y;
     float w=20, h=20;
@@ -250,6 +260,10 @@ class Slider implements Marker {
         update(x, y);
         this.w = w; 
         this.h = h;
+    }
+
+    void findDirection(List<Segment> segments) {
+    
     }
     
     void display() {
@@ -265,7 +279,7 @@ class Slider implements Marker {
  **/
 class Wheel implements Marker {
 
-    float offset[] = {PI/2,PI,3*PI/2, 2*PI};
+    float direction[] = {PI/2,PI,3*PI/2, 2*PI};
 
     float x, y;
     float w=20, h=20;
@@ -279,6 +293,10 @@ class Wheel implements Marker {
         update(x, y);
         this.w = w; 
         this.h = h;
+    }
+
+    void findPosition(List<Segment> segmentList) {
+    
     }
 
     void display() {
