@@ -55,11 +55,11 @@ void setup () {//{{{
     float offset[] = {PI/2,PI,3*PI/2, 2*PI};
 
     for(int i=0; i< NUMPINS;i++) {
-        Segment s = new Segment(offset[i]);
+        Segment s = new Segment();
         segmentList.add(s); 
     }
 
-    m = new Wheel();
+    m = new Slider();
 
 }//}}}
 
@@ -78,13 +78,6 @@ void calibrate() {//{{{
     }
 }
 //}}}
-void calibrateSegments(byte[] inBuffer) {//{{{
-    int i = 0;
-    for(Segment s: segmentList) {
-        s.setMax(inBuffer[i+2]);
-        i++;
-    }
-}//}}}
 
 void serialEvent(Serial myPort) {//{{{
 
@@ -100,7 +93,7 @@ void serialEvent(Serial myPort) {//{{{
     if(bytesRead > 0 && (inBuffer[0] == START) && (inBuffer[MESSAGESIZE - 1] == END)) { 
 
         if(calibrate) {
-            calibrateSegments(inBuffer);
+            //calibrateSegments(inBuffer);
         } else {
 
             String smsg = ""; 
@@ -111,51 +104,18 @@ void serialEvent(Serial myPort) {//{{{
             }
             println(smsg);
 
-            // get normalization values across all segments
             i = 0;
             for(Segment s: segmentList) {
                 assert(inBufferInt[i] >= 0); 
-                sumValues += (float)inBufferInt[i]/s.maxVal; // normalize each value
+                s.setRawVal(inBufferInt[i]);
                 i++;
             }
 
-            // Check that we have a minimal value.
-            if(sumValues > THRESHOLD) {
-                i = 0;
-                for(Segment s: segmentList) {
-                    totalNormalized += s.normVal(inBufferInt[i], sumValues);
-                    i++;
-                }
-                
-                //mappedVal_f = floor(map(finalVal, .2, 1, 10, 390));
-                mappedVal_f = map(finalVal, .2, 1, 0, 2*PI);
-                println("unmapped: " + totalNormalized + ", mapped: " + mappedVal_f);
-                //sampleVal += mappedVal_f;
-                //m.update(mappedVal_f, mappedVal_f);
-                m.update(totalNormalized, totalNormalized);
-                m.display();
-            }
+            m.plot(segmentList);
+            m.display();
         }
     } else {
         myPort.clear();
-    }
-}//}}}
-
-/**
- * Accept commands 
- **/
-void keyReleased() {   //{{{
-    if(key == ' ') {
-        println("Sending signal.");
-        myPort.write('a'); 
-    } else if(key == 'c') {
-        calibrate();
-        if(calibrate) {
-        println("Beginning calibration...");
-        println("Please swipe your finger over.");
-        } else {
-        println("Ending calibration...");
-        } 
     }
 }//}}}
 
@@ -165,7 +125,6 @@ void keyReleased() {   //{{{
  **/ 
 interface Marker {
 
-    float[] direction;    // array of numbers representing different directions
     void update(float x, float y ); 
     void update(float x, float y, float w, float h); 
     void plot(List<Segment> segments);
@@ -188,7 +147,7 @@ class Segment {//{{{
 
     public void setRawVal(int newRawVal) {
         this.rawVal = (float) newRawVal;
-        updateMax();
+        this.updateMax();
     }
 
     public float getSelfNormalizedVal() {
@@ -202,45 +161,19 @@ class Segment {//{{{
         return groupNormalizedVal; 
     }
 
-    public groupNormalize(float totalVal) {
+    public void groupNormalize(float totalVal) {
         groupNormalizedVal = selfNormalizedVal / totalVal; 
     }
 
-    public selfNormalize() {
-        selfNormalizedVal = rawVal / maxVal; 
-    }
-
-    private updateMax() {
+    private void updateMax() {
         maxVal = (rawVal > maxVal) ? rawVal: maxVal; 
     }
 
-}//}}}
-
-class Segment {//{{{
-
-    float offSet = 0;
-    final float segmentOffset; // this value determines the segments position
-    int maxVal = 1;
-    int currentVal = 0;
-
-    Segment(float segmentOffset) {
-        this.segmentOffset = segmentOffset;
+    public void selfNormalize() {
+        selfNormalizedVal = rawVal / maxVal; 
     }
 
-    void setMax(int newMax) {
-        maxVal = (newMax > maxVal) ? newMax: maxVal; 
-    }
 
-    float normVal(int val, float normal) {
-        if(val > maxVal) { // keep track of maximum values
-            println("Value out of range: recalibrating..."); 
-            this.setMax(val);
-        }
-        float normedVal = ((float)val/maxVal)/normal;
-        float norm = normedVal * segmentOffset; // apply offset to normalized value 
-        println(val + " : " + maxVal +" : " + ((float)val)/maxVal  + " : " + norm);
-        return norm;
-    }
 }//}}}
 
 /**
@@ -276,7 +209,7 @@ class Slider implements Marker {
 
         // normalize initial values and get totals
         for(Segment s: segments) {
-            totalValue += s.getNormalizedVal(); 
+            totalValue += s.getSelfNormalizedVal(); 
         }
 
         // normalize each value against all values
@@ -288,11 +221,12 @@ class Slider implements Marker {
             checkValue += s.groupNormalizedVal;
         }
 
-        assert(checkValue == 1);
+        println(checkValue);
+        assert(checkValue >= .99 && checkValue <= 1.01);
 
         i = 0;
         for(Segment s: segments) {
-            averageValue += s.getNormalizedVal * direction[i];
+            averageValue += s.groupNormalizedVal * direction[i];
         }
 
         update(averageValue);
@@ -327,13 +261,13 @@ class Wheel implements Marker {
         this.h = h;
     }
 
-    void plot(List<Segment> segmentList) {
+    void plot(List<Segment> segments) {
         int i = 0, j = 0;
         float totalValue = 0, checkValue = 0, averageValue = 0;
 
         // normalize initial values and get totals
         for(Segment s: segments) {
-            totalValue += s.getNormalizedVal(); 
+            totalValue += s.getSelfNormalizedVal(); 
         }
 
         // normalize each value against all values
@@ -347,11 +281,11 @@ class Wheel implements Marker {
 
         assert(checkValue == 1);
 
-        float xVal = segments.get(1).groupNormalizedVal * directions[1] - 
-            segments.get(3).groupNormalizedVal * directions(3);
+        float xVal = (segments.get(1).groupNormalizedVal * direction[1] - 
+            segments.get(3).groupNormalizedVal * direction[3]) / 2;
 
-        float yVal = segments.get(0).groupNormalizedVal * directions[0] - 
-            segments.get(2).groupNormalizedVal * directions(2);
+        float yVal = (segments.get(0).groupNormalizedVal * direction[0] - 
+            segments.get(2).groupNormalizedVal * direction[2]) / 2;
 
         update(xVal, yVal);
     
@@ -364,3 +298,27 @@ class Wheel implements Marker {
     }
 
 }
+
+/**
+ * Utilities and Bric-a-brac
+ *
+ **/
+
+/**
+ * Accept commands 
+ **/
+void keyReleased() {   //{{{
+    if(key == ' ') {
+        println("Sending signal.");
+        myPort.write('a'); 
+    } else if(key == 'c') {
+        calibrate();
+        if(calibrate) {
+        println("Beginning calibration...");
+        println("Please swipe your finger over.");
+        } else {
+        println("Ending calibration...");
+        } 
+    }
+}//}}}
+
