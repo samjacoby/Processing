@@ -25,13 +25,9 @@ List<Segment> segmentList = new ArrayList<Segment>();
  * Utility Variables
  **/
 Boolean calibrate = false;
-Boolean wrapAround = true; // should we wrap around?
+
 // Anything below this isn't a touch.
 float THRESHOLD = .2; 
-// Average over a number of samples
-float sampleVal = 0;
-int sampleCount = 0;
-int sampleMax = 3;
 
 // Things to Draw
 Marker m;
@@ -59,7 +55,7 @@ void setup () {//{{{
         segmentList.add(s); 
     }
 
-    m = new Slider();
+    m = new Wheel();
 
 }//}}}
 
@@ -182,7 +178,7 @@ class Segment {//{{{
  **/
 class Slider implements Marker {
 
-    float direction[] = {1,2,3,4,5};
+    float direction[] = {4,3,1,2,5};
 
     float x, y;
     float w=20, h=20;
@@ -221,19 +217,22 @@ class Slider implements Marker {
             checkValue += s.groupNormalizedVal;
         }
 
-        println(checkValue);
+        // let it be a little fuzzy, eh?
         assert(checkValue >= .99 && checkValue <= 1.01);
 
         i = 0;
         for(Segment s: segments) {
             averageValue += s.groupNormalizedVal * direction[i];
+            i++;
         }
+        println(averageValue);
 
-        update(averageValue);
+        update(averageValue, height/2);
     }
     
     void display() {
         fill(160, 100, 35);
+        x = map(x, 0, 5, 0, width);
         ellipse(x, y, w, h);
     }
     
@@ -279,7 +278,7 @@ class Wheel implements Marker {
             checkValue += s.groupNormalizedVal;
         }
 
-        assert(checkValue == 1);
+        assert(checkValue >= .99 && checkValue <= 1.01);
 
         float xVal = (segments.get(1).groupNormalizedVal * direction[1] - 
             segments.get(3).groupNormalizedVal * direction[3]) / 2;
