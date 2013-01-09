@@ -77,7 +77,7 @@ void calibrate() {//{{{
 
 void serialEvent(Serial myPort) {//{{{
 
-    //background(0);
+    background(0);
 
     byte[] inBuffer = new byte[MESSAGESIZE];
     int[] inBufferInt = new int[NUMPINS];
@@ -247,11 +247,12 @@ class Wheel implements Marker {
     float direction[] = {PI/2,PI,3*PI/2, 2*PI};
 
     float x, y;
+    float scale = 70;
     float w=20, h=20;
 
     void update(float x, float y) {
-        this.x = 100*cos(x) + width/2;
-        this.y = 100*sin(y) + height/2;
+        this.x = scale*x + width/2;
+        this.y = scale*y + width/2;
     }
 
     void update(float x, float y, float w, float h) {
@@ -261,6 +262,7 @@ class Wheel implements Marker {
     }
 
     void plot(List<Segment> segments) {
+
         int i = 0, j = 0;
         float totalValue = 0, checkValue = 0, averageValue = 0;
 
@@ -282,14 +284,17 @@ class Wheel implements Marker {
 
         float xVal = (segments.get(1).groupNormalizedVal * direction[1] - 
             segments.get(3).groupNormalizedVal * direction[3]) / 2;
-
         float yVal = (segments.get(0).groupNormalizedVal * direction[0] - 
             segments.get(2).groupNormalizedVal * direction[2]) / 2;
+        println("x: " + xVal + ", y: " +yVal);
 
         float length = sqrt(pow(yVal,2) + pow(xVal,2)); 
 
+        // unit vector, please
+        xVal = xVal/length;
+        yVal = yVal/length;
 
-        update(xVal/length, yVal/length);
+        update(xVal, yVal);
     
     }
 
