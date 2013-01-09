@@ -2,7 +2,7 @@ import processing.serial.*;
 
 Serial myPort;        // The serial port
 
-final int NUMPINS = 4;      // Number of inputs 
+final int NUMPINS = 5;      // Number of inputs 
 
 /**
  * Packet Specifications 
@@ -55,7 +55,7 @@ void setup () {//{{{
         segmentList.add(s); 
     }
 
-    m = new Wheel();
+    m = new Slider();
 
 }//}}}
 
@@ -137,7 +137,7 @@ interface Marker {
 class Segment {//{{{
 
     float rawVal;
-    float maxVal;
+    float maxVal = 1;
     float selfNormalizedVal;
     float groupNormalizedVal;
 
@@ -270,6 +270,10 @@ class Wheel implements Marker {
         for(Segment s: segments) {
             totalValue += s.getSelfNormalizedVal(); 
         }
+        if(totalValue == 0) {
+            return;
+
+        }
 
         // normalize each value against all values
         for(Segment s:segments) {
@@ -278,14 +282,16 @@ class Wheel implements Marker {
 
         for(Segment s: segments) {
             checkValue += s.groupNormalizedVal;
+            println(checkValue);
         }
 
+        println(checkValue);
         assert(checkValue >= .99 && checkValue <= 1.01);
 
-        float xVal = (segments.get(1).groupNormalizedVal * direction[1] - 
-            segments.get(3).groupNormalizedVal * direction[3]) / 2;
-        float yVal = (segments.get(0).groupNormalizedVal * direction[0] - 
-            segments.get(2).groupNormalizedVal * direction[2]) / 2;
+        float yVal = (segments.get(3).groupNormalizedVal * direction[3] - 
+            segments.get(1).groupNormalizedVal * direction[1]) / 2;
+        float xVal = (segments.get(2).groupNormalizedVal * direction[2] - 
+            segments.get(0).groupNormalizedVal * direction[0]) / 2;
         println("x: " + xVal + ", y: " +yVal);
 
         float length = sqrt(pow(yVal,2) + pow(xVal,2)); 
