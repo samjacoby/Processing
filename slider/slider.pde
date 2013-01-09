@@ -1,5 +1,4 @@
 import processing.serial.*;
-import java.math;
 
 Serial myPort;        // The serial port
 
@@ -28,7 +27,7 @@ List<Segment> segmentList = new ArrayList<Segment>();
 Boolean calibrate = false;
 
 // Anything below this isn't a touch.
-double THRESHOLD = .2; 
+float THRESHOLD = .2; 
 
 // Things to Draw
 Marker m;
@@ -49,7 +48,7 @@ void setup () {//{{{
     myPort.bufferUntil(int(END));
 
     //int offset[] = {4,3,1,2,5}; // control ordering
-    double offset[] = {PI/2,PI,3*PI/2, 2*PI};
+    float offset[] = {PI/2,PI,3*PI/2, 2*PI};
 
     for(int i=0; i< NUMPINS;i++) {
         Segment s = new Segment();
@@ -84,7 +83,7 @@ void serialEvent(Serial myPort) {//{{{
     int[] inBufferInt = new int[NUMPINS];
 
     int i = 0, mappedVal;
-    double totalNormalized = 0, sumValues = 0, finalVal = 0, mappedVal_f;
+    float totalNormalized = 0, sumValues = 0, finalVal = 0, mappedVal_f;
     int bytesRead = myPort.readBytesUntil(END, inBuffer);
 
     if(bytesRead > 0 && (inBuffer[0] == START) && (inBuffer[MESSAGESIZE - 1] == END)) { 
@@ -122,8 +121,8 @@ void serialEvent(Serial myPort) {//{{{
  **/ 
 interface Marker {
 
-    void update(double x, double y ); 
-    void update(double x, double y, double w, double h); 
+    void update(float x, float y ); 
+    void update(float x, float y, float w, float h); 
     void plot(List<Segment> segments);
     void display(); 
 
@@ -137,28 +136,28 @@ interface Marker {
 
 class Segment {//{{{
 
-    double rawVal;
-    double maxVal;
-    double selfNormalizedVal;
-    double groupNormalizedVal;
+    float rawVal;
+    float maxVal;
+    float selfNormalizedVal;
+    float groupNormalizedVal;
 
     public void setRawVal(int newRawVal) {
-        this.rawVal = (double) newRawVal;
+        this.rawVal = (float) newRawVal;
         this.updateMax();
     }
 
-    public double getSelfNormalizedVal() {
+    public float getSelfNormalizedVal() {
         selfNormalize();
         return selfNormalizedVal;
     
     }
 
-    public double getGroupNormalizedVal(double totalVal) {
+    public float getGroupNormalizedVal(float totalVal) {
         groupNormalize(totalVal);
         return groupNormalizedVal; 
     }
 
-    public void groupNormalize(double totalVal) {
+    public void groupNormalize(float totalVal) {
         groupNormalizedVal = selfNormalizedVal / totalVal; 
     }
 
@@ -179,22 +178,22 @@ class Segment {//{{{
  **/
 class Slider implements Marker {
 
-    double direction[] = {4,3,1,2,5};
+    float direction[] = {4,3,1,2,5};
 
-    double x, y;
-    double w=20, h=20;
+    float x, y;
+    float w=20, h=20;
 
-    void update(double v) {
+    void update(float v) {
         this.x = v;
         this.y = v;
     }
 
-    void update(double x, double y ) {
+    void update(float x, float y ) {
         this.x = x;
         this.y = y;
     }
 
-    void update(double x, double y, double w, double h) {
+    void update(float x, float y, float w, float h) {
         update(x, y);
         this.w = w; 
         this.h = h;
@@ -202,7 +201,7 @@ class Slider implements Marker {
 
     void plot(List<Segment> segments) {
         int i = 0, j = 0;
-        double totalValue = 0, checkValue = 0, averageValue = 0;
+        float totalValue = 0, checkValue = 0, averageValue = 0;
 
         // normalize initial values and get totals
         for(Segment s: segments) {
@@ -233,7 +232,7 @@ class Slider implements Marker {
     
     void display() {
         fill(160, 100, 35);
-        x = map(x, 0, 5, 0, width);
+        x = map((float)x, 0, 5, 0, width);
         ellipse(x, y, w, h);
     }
     
@@ -245,17 +244,17 @@ class Slider implements Marker {
  **/
 class Wheel implements Marker {
 
-    double direction[] = {PI/2,PI,3*PI/2, 2*PI};
+    float direction[] = {PI/2,PI,3*PI/2, 2*PI};
 
-    double x, y;
-    double w=20, h=20;
+    float x, y;
+    float w=20, h=20;
 
-    void update(double x, double y) {
+    void update(float x, float y) {
         this.x = 100*cos(x) + width/2;
         this.y = 100*sin(y) + height/2;
     }
 
-    void update(double x, double y, double w, double h) {
+    void update(float x, float y, float w, float h) {
         update(x, y);
         this.w = w; 
         this.h = h;
@@ -263,7 +262,7 @@ class Wheel implements Marker {
 
     void plot(List<Segment> segments) {
         int i = 0, j = 0;
-        double totalValue = 0, checkValue = 0, averageValue = 0;
+        float totalValue = 0, checkValue = 0, averageValue = 0;
 
         // normalize initial values and get totals
         for(Segment s: segments) {
@@ -281,16 +280,16 @@ class Wheel implements Marker {
 
         assert(checkValue >= .99 && checkValue <= 1.01);
 
-        double xVal = (segments.get(1).groupNormalizedVal * direction[1] - 
+        float xVal = (segments.get(1).groupNormalizedVal * direction[1] - 
             segments.get(3).groupNormalizedVal * direction[3]) / 2;
 
-        double yVal = (segments.get(0).groupNormalizedVal * direction[0] - 
+        float yVal = (segments.get(0).groupNormalizedVal * direction[0] - 
             segments.get(2).groupNormalizedVal * direction[2]) / 2;
 
-        double length = math. 
+        float length = sqrt(pow(yVal,2) + pow(xVal,2)); 
 
 
-        update(xVal, yVal);
+        update(xVal/length, yVal/length);
     
     }
 
